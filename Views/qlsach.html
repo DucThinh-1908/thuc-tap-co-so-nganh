@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Sách</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, select, button {
+            padding: 8px;
+            margin: 5px;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="goBack()">Quay lại</button>
+        <h2>Quản lý Sách</h2>
+        <input type="text" id="search" placeholder="Tìm kiếm...">
+        <div class="btn-group">
+            <button onclick="searchBook()">Tìm Kiếm</button>
+            <button onclick="resetForm()">Reset</button>
+        </div>
+        <input type="text" id="bookName" placeholder="Tên sách">
+        <input type="text" id="author" placeholder="Tác giả">
+        <input type="text" id="publisher" placeholder="NXB">
+        <input type="number" id="year" placeholder="Năm xuất bản">
+        <input type="number" id="price" placeholder="Giá tiền">
+        <input type="number" id="quantity" placeholder="Số lượng">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã Sách</th>
+                    <th>Tên Sách</th>
+                    <th>Tác Giả</th>
+                    <th>NXB</th>
+                    <th>Năm XB</th>
+                    <th>Giá Tiền</th>
+                    <th>Số Lượng</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>S01</td>
+                    <td>Dế Mèn Phiêu Lưu Ký</td>
+                    <td>Tô Hoài</td>
+                    <td>Hà Nội</td>
+                    <td>2023</td>
+                    <td>89000</td>
+                    <td>7</td>
+                </tr>
+                <tr>
+                    <td>S03</td>
+                    <td>Số đỏ</td>
+                    <td>Vũ Trọng Phụng</td>
+                    <td>Hà Nội</td>
+                    <td>2010</td>
+                    <td>50000</td>
+                    <td>6</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function resetForm() {
+            document.getElementById('search').value = '';
+            document.getElementById('bookName').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById('publisher').value = '';
+            document.getElementById('year').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('quantity').value = '';
+        }
+    </script>
+</body>
+</html>

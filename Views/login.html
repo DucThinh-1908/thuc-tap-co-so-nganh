@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #007bff, #00c6ff);
+            font-family: Arial, sans-serif;
+        }
+        .login-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+        }
+        .login-container h2 {
+            color: #0056b3;
+        }
+        .input-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .login-btn:hover {
+            background: #0056b3;
+        }
+        .links {
+            margin-top: 10px;
+        }
+        .links a {
+            text-decoration: none;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Quản lý thư viện HaUI</h2>
+        <div class="input-group">
+            <input type="text" id="username" placeholder="Username">
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password">
+        </div>
+        <button class="login-btn" onclick="login()">Login</button>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function login() {
+    var username = $("#username").val();  // Đặt đúng tên biến
+    var password = $("#password").val();
+
+    if (!username || !password) {
+        alert("Vui lòng nhập đầy đủ thông tin!");
+        return;
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:8000/users/login/",  // Đổi đúng endpoint nếu cần
+        contentType: "application/json",
+        data: JSON.stringify({ user_name: username, password: password }),
+        success: function(response) {
+            alert("Đăng nhập thành công!");
+            window.location.href = "function.html";
+        },
+        error: function(xhr) {
+            alert("Đăng nhập thất bại");
+            console.log(xhr)
+        }
+    });
+}
+
+</script>
+
+</html>

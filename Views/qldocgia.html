@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Độc Giả</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .form-group input {
+            width: 48%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="goBack()">Quay lại</button>
+        <h2>Quản Lý Độc Giả</h2>
+        <div class="form-group">
+            <input type="text" id="madocgia" placeholder="Mã độc giả">
+            <input type="text" id="khoa" placeholder="Khoa">
+        </div>
+        <div class="form-group">
+            <input type="text" id="hoten" placeholder="Họ và tên">
+            <input type="text" id="lop" placeholder="Lớp">
+        </div>
+        <div class="form-group">
+            <input type="text" id="diachi" placeholder="Địa chỉ">
+            <input type="text" id="sodienthoai" placeholder="Số điện thoại">
+        </div>
+        <div class="buttons">
+            <button>Tìm Kiếm</button>
+            <button onclick="resetFields()">Reset</button>
+            <button>Thêm</button>
+            <button>Sửa</button>
+        </div>
+    </div>
+</body>
+<script>
+    function resetFields() {
+        document.getElementById("madocgia").value = "";
+        document.getElementById("khoa").value = "";
+        document.getElementById("hoten").value = "";
+        document.getElementById("lop").value = "";
+        document.getElementById("diachi").value = "";
+        document.getElementById("sodienthoai").value = "";
+    }
+</script>
+<script>
+    function navigateTo(page) {
+        window.location.href = page;
+    }
+
+    function goBack() {
+        window.location.href = "management.html"; // Quay lại trang login
+    }
+</script>
+</html>
