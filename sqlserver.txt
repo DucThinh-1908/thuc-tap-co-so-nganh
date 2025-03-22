@@ -1,0 +1,255 @@
+CREATE DATABASE qlsach1;
+GO
+
+USE qlsach1
+GO
+
+-- Table: Publisher (Nhà xuất bản)
+CREATE TABLE Publisher (
+    publisher_id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+GO
+
+-- Table: Author (Tác giả)
+CREATE TABLE Author (
+    author_id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+GO
+
+-- Table: Library_staff (Nhân viên thư viện)
+CREATE TABLE Library_staff (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    address VARCHAR(255)
+);
+GO
+
+-- Table: Users (Tài khoản người dùng, liên kết với Library_staff)
+CREATE TABLE Users (
+    id INT IDENTITY(1,1) NOT NULL,
+    user_name VARCHAR(255) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+    role CHAR(1) NOT NULL,
+    FOREIGN KEY (id) REFERENCES Library_staff(id)
+);
+GO
+
+-- Table: Readers (Độc giả)
+CREATE TABLE Readers (
+    reader_id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(15),
+    address VARCHAR(255),
+    faculty VARCHAR(255),
+    Class VARCHAR(255)
+);
+GO
+
+-- Table: Books (Sách, liên kết với Publisher và Author)
+CREATE TABLE Books (
+    book_id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL,
+    price INT NOT NULL,
+    published_year VARCHAR(20),
+    publisher_id VARCHAR(20) NOT NULL,
+    author_id VARCHAR(20) NOT NULL,
+    FOREIGN KEY (publisher_id) REFERENCES Publisher(publisher_id),
+    FOREIGN KEY (author_id) REFERENCES Author(author_id)
+);
+GO
+
+-- Table: Borrow_ticket (Phiếu mượn, liên kết với Library_staff và Readers)
+CREATE TABLE Borrow_ticket (
+	id INT IDENTITY(1,1) NOT NULL,
+    ticket_id VARCHAR(20) PRIMARY KEY,
+    reader_id VARCHAR(20) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    FOREIGN KEY (id) REFERENCES Library_staff(id),
+    FOREIGN KEY (reader_id) REFERENCES Readers(reader_id)
+);
+GO
+
+-- Table: Borrow_ticket_detail (Chi tiết phiếu mượn, liên kết với Borrow_ticket và Books)
+CREATE TABLE Borrow_ticket_detail (
+    ticket_id VARCHAR(20) NOT NULL,
+    book_id VARCHAR(20) NOT NULL,
+    PRIMARY KEY (ticket_id, book_id),
+    FOREIGN KEY (ticket_id) REFERENCES Borrow_ticket(ticket_id),
+    FOREIGN KEY (book_id) REFERENCES Books(book_id)
+);
+GO
+
+-- Thêm dữ liệu vào bảng library_staff
+INSERT INTO library_staff (name, phone, address)
+VALUES 
+    ('Nguyen Van A', '0123456789', '123 ABC Street'),
+    ('Tran Thi B', '0987654321', '456 XYZ Street');
+select * From library_staff
+-- Thêm dữ liệu vào bảng Users
+INSERT INTO Users (user_name, password, role)
+VALUES 
+    ('admin', 'admin123','1'),
+    ('staff1', 'staff123','0');
+
+-- Thêm dữ liệu vào bảng reader
+INSERT INTO readers (reader_id, name, phone, address, faculty, class)
+VALUES 
+('R003', 'Pham D', 'r23432109', '222 GHI Street', 'Land', 'B01');
+    ('R001', 'Le Van C', '0345678901', '789 DEF Street', 'IT', 'IT01'),
+    ('R002', 'Pham Thi D', '0765432109', '987 GHI Street', 'Business', 'B01');
+
+-- Thêm dữ liệu vào bảng publisher
+INSERT INTO publisher (publisher_id, name)
+VALUES 
+    ('P001', 'NXB Tre'),
+    ('P002', 'NXB Kim Dong');
+
+-- Thêm dữ liệu vào bảng author
+INSERT INTO author (author_id, name)
+VALUES 
+    ('A001', 'Nguyen Nhat Anh'),
+    ('A002', 'To Hoai');
+
+-- Thêm dữ liệu vào bảng book
+INSERT INTO books (book_id, name, quantity, price, published_year, publisher_id, author_id)
+VALUES 
+    ('B001', 'Kinh Van Hoa', 10, 50000, '1995', 'P001', 'A001'),
+    ('B002', 'De Men Phieu Luu Ky', 15, 60000, '1941', 'P002', 'A002');
+
+-- Thêm dữ liệu vào bảng borrow_ticket
+INSERT INTO borrow_ticket (ticket_id, reader_id, start_date, end_date, status)
+VALUES 
+    ('T001', 'R001', '2025-03-01', '2025-03-10', 'Borrowed'),
+    ('T002', 'R002', '2025-03-05', '2025-03-15', 'Returned');
+
+-- Thêm dữ liệu vào bảng borrow_ticket_detail
+INSERT INTO borrow_ticket_detail (ticket_id, book_id)
+VALUES 
+    ('T001', 'B001'),
+    ('T002', 'B002');
+CREATE PROCEDURE THEM_NV
+    @ma_nv VARCHAR(20),
+    @name NVARCHAR(255),
+    @std VARCHAR(255),
+    @dc NVARCHAR(255),
+    @tk NVARCHAR(255),
+    @mk NVARCHAR(255),
+    @role INT
+AS
+BEGIN
+    INSERT INTO library_staff (id, name, phone, address)
+    VALUES (@ma_nv, @name, @std, @dc);
+    
+    INSERT INTO Users (id, user_name, password, role)
+    VALUES (@ma_nv, @tk, @mk, @role);
+END;
+---------------
+CREATE PROCEDURE THEM_SACH
+    @p_ticket_id INT,
+    @p_book_id INT
+AS
+BEGIN
+    INSERT INTO borrow_ticket_detail (ticket_id, book_id)
+    VALUES (@p_ticket_id, @p_book_id);
+
+    UPDATE book
+    SET quantity = quantity - 1
+    WHERE book_id = @p_book_id;
+END;
+---------------
+
+-----------
+CREATE PROCEDURE XOA_SACH
+    @p_ticket_id varchar(255),
+    @p_book_id varchar(255)
+AS
+BEGIN
+    DELETE FROM borrow_ticket_detail
+    WHERE ticket_id = @p_ticket_id AND book_id = @p_book_id;
+
+    UPDATE book
+    SET quantity = quantity + 1
+    WHERE book_id = @p_book_id;
+END;
+exec XOA_SACH @p_ticket_id = 'T001', @p_book_id = 'B001'
+------------------------
+CREATE FUNCTION TONG_TIEN (@ticket_id VARCHAR(255))
+RETURNS INT
+AS
+BEGIN
+    DECLARE @total INT;
+
+    SELECT @total = SUM(price)
+    FROM book
+    JOIN borrow_ticket_detail ON book.book_id = borrow_ticket_detail.book_id
+    WHERE borrow_ticket_detail.ticket_id = @ticket_id;
+
+    RETURN @total;
+END;
+SELECT dbo.TONG_TIEN('T002');
+CREATE PROCEDURE XOA_NV
+    @p_manv INT
+AS
+BEGIN
+    BEGIN TRANSACTION;
+
+    BEGIN TRY
+        -- Kiểm tra nếu nhân viên có dữ liệu trong borrow_ticket
+        IF EXISTS (SELECT 1 FROM borrow_ticket WHERE id = @p_manv)
+        BEGIN
+            -- Xóa tất cả các borrow_ticket liên quan
+            DELETE FROM borrow_ticket WHERE id = @p_manv;
+        END
+
+        -- Xóa tài khoản trong bảng Users trước
+        DELETE FROM Users WHERE id = @p_manv;
+
+        -- Xóa nhân viên trong bảng library_staff
+        DELETE FROM library_staff WHERE id = @p_manv;
+
+        COMMIT TRANSACTION;
+        PRINT 'Xóa nhân viên thành công.';
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT 'Có lỗi xảy ra. Giao dịch bị hủy.';
+    END CATCH
+END;
+
+--------------
+CREATE PROCEDURE SUA_NHAN_VIEN
+    @manv VARCHAR(255),
+    @name NVARCHAR(255),
+    @std VARCHAR(255),
+    @dc NVARCHAR(255),
+    @tk NVARCHAR(255),
+    @mk NVARCHAR(255),
+    @role INT
+AS
+BEGIN
+    IF @manv <> 'NV03'
+    BEGIN
+        UPDATE library_staff
+        SET name = @name, phone = @std, address = @dc
+        WHERE id = @manv;
+
+        DELETE FROM Users WHERE id = @manv;
+
+        INSERT INTO Users (user_name, password, role, id)
+        VALUES (@tk, @mk, @role, @manv);
+    END
+END;
+SELECT * FROM Users;
+SELECT * FROM library_staff;
+SELECT * FROM readers;
+SELECT * FROM borrow_ticket;
+SELECT * FROM borrow_ticket_detail;
+SELECT * FROM books;
+SELECT * FROM publisher;
+SELECT * FROM author;
