@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Thông tin kết nối SQL Server Tùng sửa
+# Thông tin kết nối SQL Server Tùng sửa sửaaa
 SERVER = "DESKTOP-UHPSETD\\SQLEXPRESS"
 DATABASE = "qlsach1"
 USERNAME = "sa"
