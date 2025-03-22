@@ -186,7 +186,7 @@ BEGIN
     DECLARE @total INT;
 
     SELECT @total = SUM(price)
-    FROM book
+    FROM books
     JOIN borrow_ticket_detail ON books.book_id = borrow_ticket_detail.book_id
     WHERE borrow_ticket_detail.ticket_id = @ticket_id;
 
