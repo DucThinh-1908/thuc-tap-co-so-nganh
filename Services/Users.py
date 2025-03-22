@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from Models.Users import UserModel, UserCreate, UserUpdate, UserResponse, UserLogin
+from Models.Users import UserModel, UserCreate, UserUpdate, UserResponse, UserLogin, Readers
 from typing import List, Optional
 
 class UserService:
@@ -89,3 +89,49 @@ class UserService:
         db.delete(db_user)
         db.commit()
         return True
+    
+
+    @staticmethod
+    def get_all_readers(db: Session):
+        return db.query(Readers).all()
+    
+
+    @staticmethod
+    def add_reader(db: Session, reader_data: Readers):
+        new_reader = Readers(
+            reader_id=reader_data.reader_id,
+            name=reader_data.name,
+            phone=reader_data.phone,
+            address=reader_data.address,
+            faculty=reader_data.faculty,
+            Class=reader_data.Class
+    )
+        db.add(new_reader)
+        db.commit()
+        db.refresh(new_reader)
+        return new_reader
+    
+
+    @staticmethod
+    def update_reader(db: Session, reader_id, updated_data):
+        reader = db.query(Readers).filter(Readers.reader_id == reader_id).first()
+        if reader:
+            for key, value in updated_data.items():
+                setattr(Readers, key, value)
+            db.commit()
+            return Readers
+        return None
+    
+
+    @staticmethod
+    def search_reader(db: Session, name):
+        return db.query(Readers).filter(Readers.name.contains(name)).all()
+    
+
+    @staticmethod
+    def get_reader_by_id(reader_id: str):
+        for reader in Readers:
+            if reader["reader_id"] == reader_id:
+                return reader
+        return {}
+        

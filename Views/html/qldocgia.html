@@ -77,6 +77,8 @@
     <div class="container">
         <button class="back-btn" onclick="goBack()">Quay lại</button>
         <h2>Quản Lý Độc Giả</h2>
+        <input type="text" id="madocgia_input" placeholder="Nhập Mã Độc Giả">
+        <button id="searchButton" onclick="searchReader()">Tìm Kiếm</button>
         <div class="form-group">
             <input type="text" id="madocgia" placeholder="Mã độc giả">
             <input type="text" id="khoa" placeholder="Khoa">
@@ -90,11 +92,25 @@
             <input type="text" id="sodienthoai" placeholder="Số điện thoại">
         </div>
         <div class="buttons">
-            <button>Tìm Kiếm</button>
             <button onclick="resetFields()">Reset</button>
             <button>Thêm</button>
             <button>Sửa</button>
         </div>
+        <table id="docgiaTable">
+            <thead>
+                <tr>
+                    <th>Mã Độc Giả</th>
+                    <th>Họ và Tên</th>
+                    <th>Khoa</th>
+                    <th>Lớp</th>
+                    <th>Địa Chỉ</th>
+                    <th>Số Điện Thoại</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dữ liệu sẽ được thêm vào đây -->
+            </tbody>
+        </table>
     </div>
 </body>
 <script>
@@ -115,5 +131,80 @@
     function goBack() {
         window.location.href = "management.html"; // Quay lại trang login
     }
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function loadReaders() {
+        $.ajax({
+            url: "http://127.0.0.1:8000/users/readers",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                let tableBody = $("#docgiaTable tbody");
+                tableBody.empty();  // Xóa dữ liệu cũ
+
+                data.forEach(reader => {
+                    let newRow = `<tr>
+                        <td>${reader.reader_id}</td>
+                        <td>${reader.name}</td>
+                        <td>${reader.faculty}</td>
+                        <td>${reader.Class}</td>
+                        <td>${reader.address}</td>
+                        <td>${reader.phone}</td>
+                    </tr>`;
+                    tableBody.append(newRow);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        loadReaders(); // Gọi khi trang tải
+    });
+</script>
+<script>
+function searchReader() {
+    let readerId = document.getElementById("madocgia_input").value.trim();
+    console.log("Mã độc giả nhập vào:", readerId); // Kiểm tra giá trị nhập vào
+
+    if (!readerId || readerId === "") {
+        alert("Vui lòng nhập mã độc giả!");
+        return;
+    }
+
+    $.ajax({
+        url: `http://localhost:8000/users/readers/${readerId}`,
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            let tableBody = $("#docgiaTable tbody");
+            tableBody.empty();  // Xóa dữ liệu cũ
+
+            if (!data || Object.keys(data).length === 0) {
+                alert("Không tìm thấy độc giả!");
+                return;
+            }
+
+            let newRow = `<tr>
+                <td>${data.reader_id}</td>
+                <td>${data.name}</td>
+                <td>${data.faculty}</td>
+                <td>${data.Class}</td>
+                <td>${data.address}</td>
+                <td>${data.phone}</td>
+            </tr>`;
+            tableBody.append(newRow);
+        },
+        error: function (xhr, status, error) {
+            console.error("Lỗi khi tìm kiếm độc giả:", xhr.responseText);
+            alert("Không tìm thấy độc giả hoặc lỗi server!");
+        }
+    });
+}
+
 </script>
 </html>

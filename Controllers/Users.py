@@ -5,6 +5,7 @@ from Services.Users import UserService
 from Models.Users import UserCreate, UserUpdate, UserResponse, UserLogin
 from typing import List
 from sqlalchemy.exc import IntegrityError
+from Services.Users import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -34,16 +35,6 @@ def read_users(
     db: Session = Depends(get_db)
 ):
     return UserService.get_users(db, skip, limit)
-
-@router.get("/{user_id}", response_model=UserResponse)
-def read_user(user_id: int, db: Session = Depends(get_db)):
-    user = UserService.get_user(db, user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    return user
 
 @router.put("/{user_id}", response_model=UserResponse)
 def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
@@ -88,3 +79,32 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found"
         )
+# Các route của readers cần đặt trước route có {user_id}
+@router.get("/readers")
+def get_readers(db: Session = Depends(get_db)):
+    return UserService.get_all_readers(db)
+@router.get("/readers/{reader_id}")
+def get_reader(reader_id: str):
+    return UserService.get_reader_by_id(reader_id)
+@router.post("/readers")
+def create_reader(reader_data: dict, db: Session = Depends(get_db)):
+    return UserService.add_reader(db, reader_data)
+
+@router.put("/readers/{reader_id}")
+def edit_reader(reader_id: str, updated_data: dict, db: Session = Depends(get_db)):
+    return UserService.update_reader(db, reader_id, updated_data)
+
+@router.get("/readers/search")
+def find_reader(name: str, db: Session = Depends(get_db)):
+    return UserService.search_reader(db, name)
+
+# Route này phải để sau
+@router.get("/{user_id}", response_model=UserResponse)
+def read_user(user_id: int, db: Session = Depends(get_db)):
+    user = UserService.get_user(db, user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return user

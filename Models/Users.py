@@ -24,7 +24,30 @@ class UserUpdate(BaseModel):
 class UserLogin(BaseModel):
     user_name: str
     password: str
+from sqlalchemy import Column, String
+from sqlalchemy.ext.declarative import declarative_base
 
+Base = declarative_base()
+
+class Readers(Base):
+    __tablename__ = "Readers"
+
+    reader_id = Column(String(255), primary_key=True, nullable=False)
+    name = Column(String(255), nullable=False)
+    faculty = Column(String(255), nullable=True)
+    Class = Column(String(50), nullable=True)
+    address = Column(String(255), nullable=True)
+    phone = Column(String(15), nullable=True)
+
+class ReadersSchema(BaseModel):
+    reader_id: str
+    name: str
+    faculty: str | None = None
+    Class: str | None = None
+    address: str | None = None
+    phone: str | None = None
+    class Config:
+        from_attributes = True
 class UserResponse(BaseModel):
     id: int
     user_name: str
