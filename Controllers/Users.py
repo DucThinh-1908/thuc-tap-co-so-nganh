@@ -80,31 +80,45 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
             detail="User not found"
         )
 # Các route của readers cần đặt trước route có {user_id}
+@router.get("/readers/search")
+def find_reader(name: str, db: Session = Depends(get_db)):
+    readers = UserService.search_reader(db, name)
+    if not readers:
+        return {"message": "No readers found with this name"}
+    return readers
 @router.get("/readers")
 def get_readers(db: Session = Depends(get_db)):
-    return UserService.get_all_readers(db)
+    readers = UserService.get_all_readers(db)
+    if not readers:
+        return {"message": "No readers found"}
+    return readers
+
 @router.get("/readers/{reader_id}")
-def get_reader(reader_id: str):
-    return UserService.get_reader_by_id(reader_id)
+def get_reader(reader_id: str, db: Session = Depends(get_db)):
+    reader = UserService.get_reader_by_id(db, reader_id)
+    if reader:
+        return reader
+    return {"message": "Reader not found"}
+
 @router.post("/readers")
 def create_reader(reader_data: dict, db: Session = Depends(get_db)):
-    return UserService.add_reader(db, reader_data)
+    try:
+        new_reader = UserService.add_reader(db, reader_data)
+        return {"message": "Reader created successfully", "reader": new_reader}
+    except IntegrityError:
+        db.rollback()
+        return {"message": "Error creating reader"}
 
 @router.put("/readers/{reader_id}")
 def edit_reader(reader_id: str, updated_data: dict, db: Session = Depends(get_db)):
-    return UserService.update_reader(db, reader_id, updated_data)
+    updated_reader = UserService.update_reader(db, reader_id, updated_data)
+    if updated_reader:
+        return {"message": "Reader updated successfully", "reader": updated_reader}
+    return {"message": "Reader not found"}
 
-@router.get("/readers/search")
-def find_reader(name: str, db: Session = Depends(get_db)):
-    return UserService.search_reader(db, name)
-
-# Route này phải để sau
 @router.get("/{user_id}", response_model=UserResponse)
 def read_user(user_id: int, db: Session = Depends(get_db)):
     user = UserService.get_user(db, user_id)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        return {"message": "User not found"}
     return user

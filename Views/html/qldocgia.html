@@ -77,8 +77,8 @@
     <div class="container">
         <button class="back-btn" onclick="goBack()">Quay lại</button>
         <h2>Quản Lý Độc Giả</h2>
-        <input type="text" id="madocgia_input" placeholder="Nhập Mã Độc Giả">
-        <button id="searchButton" onclick="searchReader()">Tìm Kiếm</button>
+        <input type="text" id="reader_name" placeholder="Nhập Mã Độc Giả">
+        <button onclick="searchReader()">Tìm Kiếm</button>
         <div class="form-group">
             <input type="text" id="madocgia" placeholder="Mã độc giả">
             <input type="text" id="khoa" placeholder="Khoa">
@@ -168,39 +168,38 @@
 </script>
 <script>
 function searchReader() {
-    let readerId = document.getElementById("madocgia_input").value.trim();
-    console.log("Mã độc giả nhập vào:", readerId); // Kiểm tra giá trị nhập vào
+    var reader_name = $("#reader_name").val(); // Lấy từ input đúng
 
-    if (!readerId || readerId === "") {
-        alert("Vui lòng nhập mã độc giả!");
+    if (!reader_name) {
+        alert("Vui lòng nhập tên độc giả!");
         return;
     }
 
     $.ajax({
-        url: `http://localhost:8000/users/readers/${readerId}`,
         type: "GET",
-        dataType: "json",
-        success: function (data) {
-            let tableBody = $("#docgiaTable tbody");
-            tableBody.empty();  // Xóa dữ liệu cũ
-
-            if (!data || Object.keys(data).length === 0) {
+        url: `http://127.0.0.1:8000/users/readers/search?name=${reader_name}`, 
+        contentType: "application/json",
+        success: function(response) {
+            if (response && response.length > 0) { 
+                let tableBody = $("#docgiaTable tbody");
+                tableBody.empty(); 
+                response.forEach(function(reader) { 
+                    let newRow = `<tr>
+                        <td>${reader.reader_id}</td>
+                        <td>${reader.name}</td>
+                        <td>${reader.phone}</td>
+                        <td>${reader.address}</td>
+                        <td>${reader.faculty}</td>
+                        <td>${reader.Class}</td>
+                    </tr>`;
+                    tableBody.append(newRow);
+                });
+            } else {
                 alert("Không tìm thấy độc giả!");
-                return;
             }
-
-            let newRow = `<tr>
-                <td>${data.reader_id}</td>
-                <td>${data.name}</td>
-                <td>${data.faculty}</td>
-                <td>${data.Class}</td>
-                <td>${data.address}</td>
-                <td>${data.phone}</td>
-            </tr>`;
-            tableBody.append(newRow);
         },
-        error: function (xhr, status, error) {
-            console.error("Lỗi khi tìm kiếm độc giả:", xhr.responseText);
+        error: function(xhr, status, error) {
+            console.error("Chi tiết lỗi:", xhr);
             alert("Không tìm thấy độc giả hoặc lỗi server!");
         }
     });

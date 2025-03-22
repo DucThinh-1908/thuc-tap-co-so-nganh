@@ -93,7 +93,9 @@ class UserService:
 
     @staticmethod
     def get_all_readers(db: Session):
-        return db.query(Readers).all()
+        readers = db.query(Readers).all()  # Trả về danh sách
+        return readers
+
     
 
     @staticmethod
@@ -124,14 +126,6 @@ class UserService:
     
 
     @staticmethod
-    def search_reader(db: Session, name):
-        return db.query(Readers).filter(Readers.name.contains(name)).all()
-    
+    def search_reader(db: Session, name: str):
+        return db.query(Readers).filter(Readers.name.ilike(f"%{name}%")).all()
 
-    @staticmethod
-    def get_reader_by_id(reader_id: str):
-        for reader in Readers:
-            if reader["reader_id"] == reader_id:
-                return reader
-        return {}
-        
