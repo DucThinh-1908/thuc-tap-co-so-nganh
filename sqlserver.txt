@@ -158,7 +158,7 @@ BEGIN
     INSERT INTO borrow_ticket_detail (ticket_id, book_id)
     VALUES (@p_ticket_id, @p_book_id);
 
-    UPDATE book
+    UPDATE books
     SET quantity = quantity - 1
     WHERE book_id = @p_book_id;
 END;
@@ -173,7 +173,7 @@ BEGIN
     DELETE FROM borrow_ticket_detail
     WHERE ticket_id = @p_ticket_id AND book_id = @p_book_id;
 
-    UPDATE book
+    UPDATE books
     SET quantity = quantity + 1
     WHERE book_id = @p_book_id;
 END;
@@ -187,7 +187,7 @@ BEGIN
 
     SELECT @total = SUM(price)
     FROM book
-    JOIN borrow_ticket_detail ON book.book_id = borrow_ticket_detail.book_id
+    JOIN borrow_ticket_detail ON books.book_id = borrow_ticket_detail.book_id
     WHERE borrow_ticket_detail.ticket_id = @ticket_id;
 
     RETURN @total;
