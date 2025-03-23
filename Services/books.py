@@ -28,7 +28,7 @@ class ServiceBooks:
     
 
     @staticmethod
-    def update_reader(db: Session, reader_id, updated_data):
+    def update_book(db: Session, reader_id, updated_data):
         reader = db.query(Books).filter(Books.reader_id == reader_id).first()
         if reader:
             allowed_fields = {"name", "phone", "address", "faculty", "Class"}
@@ -46,6 +46,6 @@ class ServiceBooks:
     
 
     @staticmethod
-    def search_reader(db: Session, name: str):
-        return db.query(Readers).filter(Readers.name.ilike(f"%{name}%")).all()
+    def search_book(db: Session, name: str):
+        return db.query(Books).filter(Books.name.ilike(f"%{name}%")).all()
     
