@@ -8,8 +8,8 @@ class Books(Base):
 
     book_id = Column(String(255), primary_key=True, nullable=False)
     name = Column(String(255), nullable=False)
-    quantily = Column(int, nullable=True)
-    price = Column(int, nullable=True)
+    quantity = Column(Integer, nullable=True)
+    price = Column(Integer, nullable=True)
     published_year = Column(String(255), nullable=True)
     publisher_id = Column(String(255), nullable=True)
     author_id = Column(String(50), nullable=True)
@@ -17,7 +17,7 @@ class Books(Base):
 class BooksSchema(BaseModel):
     book_id: str
     name: str
-    quantily: int | None = None
+    quantity: int | None = None
     price: int | None = None
     published_year: str | None = None
     publisher_id: str | None = None

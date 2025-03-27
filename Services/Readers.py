@@ -28,7 +28,7 @@ class ServiceReaders:
     
 
     @staticmethod
-    def update_reader(db: Session, reader_id, updated_data):
+    def update_reader(db: Session, reader_id: str, updated_data: dict):
         reader = db.query(Readers).filter(Readers.reader_id == reader_id).first()
         if reader:
             allowed_fields = {"name", "phone", "address", "faculty", "Class"}
@@ -37,7 +37,7 @@ class ServiceReaders:
             for key, value in updated_data.items():
                 if key in allowed_fields and value is not None:
                     setattr(reader, key, value)
-        
+
             db.commit()  # Lưu thay đổi vào database
             db.refresh(reader)  # Làm mới đối tượng để lấy dữ liệu mới nhất
         

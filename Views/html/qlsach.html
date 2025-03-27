@@ -78,24 +78,25 @@
         <button class="back-btn" onclick="goBack()">Quay lại</button>
         <h2>Quản Lý Sách</h2>
         <div class="buttons">
-            <input type="text" id="search" placeholder="Tìm kiếm mã sách">
+            <input type="text" id="search" placeholder="Tìm kiếm tên sách">
             <button onclick="searchBook()">Tìm Kiếm</button>
         </div>
         <div class="form-group">
-            <input type="text" id="bookName" placeholder="Tên Sách">
-            <input type="text" id="publisher" placeholder="Nhà Xuất Bản">
+            <input type="text" id="book_id" placeholder="Mã sách">
+            <input type="text" id="book_name" placeholder="Tên Sách">
+            <input type="text" id="publisher_id" placeholder="Mã Nhà Xuất Bản">
         </div>
         <div class="form-group">
-            <input type="number" id="year" placeholder="Năm Xuất Bản">
+            <input type="text" id="published_year" placeholder="Năm Xuất Bản">
             <input type="number" id="price" placeholder="Giá Tiền">
         </div>
         <div class="form-group">
             <input type="number" id="quantity" placeholder="Số Lượng">
-            <input type="text" id="author" placeholder="Tác Giả">
+            <input type="text" id="author_id" placeholder="Mã Tác Giả">
         </div>
         <div class="buttons">
             <button onclick="addBook()">Thêm</button>
-            <button onclick="editBook()">Sửa</button>
+            <button onclick="updateBook()">Sửa</button>
             <button onclick="resetFields()">Reset</button>
         </div>
         <table id="bookTable">
@@ -103,11 +104,11 @@
                 <tr>
                     <th>Mã Sách</th>
                     <th>Tên Sách</th>
-                    <th>Tác Giả</th>
-                    <th>Nhà Xuất Bản</th>
-                    <th>Năm Xuất Bản</th>
-                    <th>Giá Tiền</th>
                     <th>Số Lượng</th>
+                    <th>Giá tiền</th>
+                    <th>Năm Xuất Bản</th>
+                    <th>Mã nhà xuất bản</th>
+                    <th>Mã tác giả</th>
                 </tr>
             </thead>
             <tbody>
@@ -118,11 +119,12 @@
 </body>
 <script>
     function resetFields() {
+        document.getElementById("book_id").value = "";
         document.getElementById("search").value = "";
-        document.getElementById("bookName").value = "";
-        document.getElementById("author").value = "";
-        document.getElementById("publisher").value = "";
-        document.getElementById("year").value = "";
+        document.getElementById("book_name").value = "";
+        document.getElementById("author_id").value = "";
+        document.getElementById("publisher_id").value = "";
+        document.getElementById("pulished_year").value = "";
         document.getElementById("price").value = "";
         document.getElementById("quantity").value = "";
     }
@@ -130,5 +132,168 @@
     function goBack() {
         window.location.href = "management.html";
     }
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function loadBooks() {
+        $.ajax({
+            url: "http://127.0.0.1:8000/books/books",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                let tableBody = $("#bookTable tbody");
+                tableBody.empty();  // Xóa dữ liệu cũ
+
+                data.forEach(book => {
+                    let newRow = `<tr>
+                        <td>${book.book_id}</td>
+                        <td>${book.name}</td>
+                        <td>${book.quantity}</td>
+                        <td>${book.price}</td>
+                        <td>${book.published_year}</td>
+                        <td>${book.publisher_id}</td>
+                        <td>${book.author_id}</td>
+                    </tr>`;
+                    tableBody.append(newRow);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        loadBooks(); // Gọi khi trang tải
+    });
+</script>
+
+
+<script>
+function searchBook() {
+    var book_name = $("#search").val(); // Lấy từ input đúng
+
+    if (!book_name) {
+        alert("Vui lòng nhập tên sách!");
+        return;
+    }
+    $.ajax({
+        type: "GET",
+        url: `http://127.0.0.1:8000/books/books/search?name=${book_name}`, 
+        contentType: "application/json",
+        success: function(response) {
+            if (response && response.length > 0) { 
+                let tableBody = $("#bookTable tbody");
+                tableBody.empty(); 
+                response.forEach(function(book) { 
+                    let newRow = `<tr>
+                        <td>${book.book_id}</td>
+                        <td>${book.name}</td>
+                        <td>${book.quantity}</td>
+                        <td>${book.price}</td>
+                        <td>${book.published_year}</td>
+                        <td>${book.publisher_id}</td>
+                        <td>${book.author_id}</td>
+                    </tr>`;
+                    tableBody.append(newRow);
+                });
+            } else {
+                alert("Không tìm thấy sách!");
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Chi tiết lỗi:", xhr);
+            alert("Không tìm thấy sách hoặc lỗi server!");
+        }
+    });
+}
+</script>
+
+<script>
+    function addBook() {
+        const book = {
+            book_id: $("#book_id").val().trim(),
+            name: $("#book_name").val().trim(),
+            quantity: Number($("#quantity").val().trim()),
+            price: Number($("#price").val().trim()),
+            published_year: $("#published_year").val().trim(),
+            publisher_id: $("#publisher_id").val().trim(),
+            author_id: $("#author_id").val().trim()
+        };
+
+        // Kiểm tra các trường bắt buộc
+        if (!book.name || !book.publisher_id || !book.author_id) {
+            alert("Vui lòng điền đầy đủ các trường bắt buộc!");
+            return;
+        }
+
+        // Kiểm tra quantity và price là số hợp lệ
+        if (isNaN(book.quantity) || book.quantity <= 0) {
+            alert("Số lượng phải là số dương hợp lệ!");
+            return;
+        }
+
+        if (isNaN(book.price) || book.price <= 0) {
+            alert("Giá phải là số dương hợp lệ!");
+            return;
+        }
+
+        console.log("Data sent: ", book); // Log dữ liệu để kiểm tra
+
+        // Gửi yêu cầu AJAX
+        $.ajax({
+            url: "http://127.0.0.1:8000/books/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(book),
+            success: function(response) {
+                alert("Thêm sách thành công!");
+                loadBooks();
+            },
+            error: function(xhr) {
+                const errorDetail = xhr.responseJSON?.detail || "Lỗi không xác định";
+                alert(`Lỗi: ${errorDetail}`);
+                console.error("Full error:", xhr.responseJSON);
+            }
+        });
+    }
+</script>
+    
+
+<script>
+function updateBook() {
+    const book = {};
+    if ($("#book_id").val().trim()) book.book_id = $("#book_id").val().trim();
+    if ($("#book_name").val().trim()) book.name = $("#book_name").val().trim();
+    if ($("#quantity").val().trim()) book.quantity = $("#quantity").val().trim();
+    if ($("#price").val().trim()) book.price = $("#price").val().trim();
+    if ($("#published_year").val().trim()) book.published_year = $("#published_year").val().trim();
+    if ($("#publisher_id").val().trim()) book.publisher_id = $("#publisher_id").val().trim();
+    if ($("#author_id").val().trim()) book.author_id = $("#author_id").val().trim();
+
+    if (!book.book_id) {
+        alert("Mã độc giả không được để trống");
+        return;
+    }
+
+    $.ajax({
+        url: `http://127.0.0.1:8000/books/books/${book.book_id}`,
+        type: "PUT",
+        contentType: "application/json",
+        data: JSON.stringify(book),
+        success: function(response) {
+            alert("Sửa thành công!");
+            console.log("Dữ liệu đã cập nhật:", response.book);
+            loadBooks();
+        },
+        error: function(xhr) {
+            console.error("Lỗi chi tiết:", xhr);
+            alert(`Lỗi: ${xhr.responseJSON?.detail || xhr.responseText || "Không thể cập nhật"}`);
+        }
+    });
+}
 </script>
 </html>

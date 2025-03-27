@@ -99,8 +99,7 @@ VALUES
 
 -- Thêm dữ liệu vào bảng reader
 INSERT INTO readers (reader_id, name, phone, address, faculty, class)
-VALUES 
-('R003', 'Pham D', 'r23432109', '222 GHI Street', 'Land', 'B01');
+VALUES
     ('R001', 'Le Van C', '0345678901', '789 DEF Street', 'IT', 'IT01'),
     ('R002', 'Pham Thi D', '0765432109', '987 GHI Street', 'Business', 'B01');
 
