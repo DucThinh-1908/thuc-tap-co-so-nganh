@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from database import get_db
 from Services.books import ServiceBooks
-from Models.Books import Books, BooksSchema
+from Models.books import Books, BooksSchema
 from typing import List
 from sqlalchemy.exc import IntegrityError
 
