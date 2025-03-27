@@ -93,8 +93,8 @@
         </div>
         <div class="buttons">
             <button onclick="resetFields()">Reset</button>
-            <button>Thêm</button>
-            <button>Sửa</button>
+            <button onclick="addReader()">Thêm</button>
+            <button onclick="updateReader()">Sửa</button>
         </div>
         <table id="docgiaTable">
             <thead>
@@ -166,6 +166,8 @@
         loadReaders(); // Gọi khi trang tải
     });
 </script>
+
+
 <script>
 function searchReader() {
     var reader_name = $("#reader_name").val(); // Lấy từ input đúng
@@ -201,6 +203,69 @@ function searchReader() {
         error: function(xhr, status, error) {
             console.error("Chi tiết lỗi:", xhr);
             alert("Không tìm thấy độc giả hoặc lỗi server!");
+        }
+    });
+}
+</script>
+
+
+<script>
+    function addReader() {
+    const reader = {
+        reader_id: $("#madocgia").val().trim(),
+        name: $("#hoten").val().trim(),
+        phone: $("#sodienthoai").val().trim(),
+        address: $("#diachi").val().trim(),
+        faculty: $("#khoa").val().trim(),
+        Class: $("#lop").val().trim()
+    };
+
+    $.ajax({
+        url: "http://127.0.0.1:8000/readers/add",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(reader),
+        success: function(response) {
+            alert("Thêm thành công!");
+        },
+        error: function(xhr) {
+            const errorDetail = xhr.responseJSON?.detail[0]?.msg || "Lỗi không xác định";
+            alert(`Lỗi: ${errorDetail}`);
+            console.error("Full error:", xhr.responseJSON);
+        }
+    });
+}
+</script>
+
+
+
+<script>
+function updateReader() {
+    const reader = {};
+    if ($("#madocgia").val().trim()) reader.reader_id = $("#madocgia").val().trim();
+    if ($("#hoten").val().trim()) reader.name = $("#hoten").val().trim();
+    if ($("#sodienthoai").val().trim()) reader.phone = $("#sodienthoai").val().trim();
+    if ($("#diachi").val().trim()) reader.address = $("#diachi").val().trim();
+    if ($("#khoa").val().trim()) reader.faculty = $("#khoa").val().trim();
+    if ($("#lop").val().trim()) reader.class_name = $("#lop").val().trim();
+
+    if (!reader.reader_id) {
+        alert("Mã độc giả không được để trống");
+        return;
+    }
+
+    $.ajax({
+        url: `http://127.0.0.1:8000/readers/readers/${reader.reader_id}`,
+        type: "PUT",
+        contentType: "application/json",
+        data: JSON.stringify(reader),
+        success: function(response) {
+            alert("Sửa thành công!");
+            console.log("Dữ liệu đã cập nhật:", response.reader);
+        },
+        error: function(xhr) {
+            console.error("Lỗi chi tiết:", xhr);
+            alert(`Lỗi: ${xhr.responseJSON?.detail || xhr.responseText || "Không thể cập nhật"}`);
         }
     });
 }
