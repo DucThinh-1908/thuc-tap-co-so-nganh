@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from Controllers.Users import router as user_router
 from Controllers.Readers import router as reader_router
-from Controllers.Books import router as book_router
+from Controllers.books import router as book_router
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 

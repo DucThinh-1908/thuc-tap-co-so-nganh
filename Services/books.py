@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from Models.Pulisher_Author import Publisher, Author
-from Models.Books import Books, BooksSchema
+from Models.books import Books, BooksSchema
 from typing import List, Optional
 
 class ServiceBooks:
