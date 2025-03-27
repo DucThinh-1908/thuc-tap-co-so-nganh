@@ -2,6 +2,10 @@ from sqlalchemy import Column, Integer, String
 from database import Base
 from pydantic import BaseModel
 
+
+#SQLAlchemy: Quản lý dữ liệu trong database.
+#Pydantic: Xác thực và chuyển đổi dữ liệu trong input/output
+
 class Readers(Base):
     __tablename__ = "Readers"
 
@@ -12,7 +16,6 @@ class Readers(Base):
     faculty = Column(String(255), nullable=True)
     Class = Column(String(50), nullable=True)
 
-# Pydantic Schemas
 class ReadersSchema(BaseModel):
     reader_id: str
     name: str
