@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhân Viên</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+        #box {
+            width: 1100px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        #tieude { color: blue; text-align: center; }
+        #form-container { display: flex; justify-content: space-between; }
+        .form-column { width: 48%; display: flex; flex-direction: column; gap: 15px; }
+        .form-row { display: flex; align-items: center; justify-content: space-between; }
+        .form-row span { width: 120px; font-weight: bold; }
+        .form-row input, .form-row select {
+            width: 60%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #button-container { text-align: center; margin-top: 20px; }
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        .add-btn { background-color: #28a745; color: white; }
+        .edit-btn { background-color: #ffc107; color: black; }
+        .delete-btn { background-color: #dc3545; color: white; }
+        .cancel-btn { background-color: #6c757d; color: white; }
+        button:hover { opacity: 0.8; }
+        #employee-table {
+            width: 900px;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        #employee-table th, #employee-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        #employee-table th { background-color: #007bff; color: white; }
+        #employee-table tr:hover { background-color: #f1f1f1; }
+        .action-btns { display: flex; justify-content: center; gap: 5px; }
+    </style>
+</head>
+<body>
+    <div id="box">
+        <h2 id="tieude">Quản lý nhân viên thư viện</h2>
+
+        <div id="form-container">
+            <div class="form-column">
+                <div class="form-row">
+                    <span>Họ và tên:</span>
+                    <input type="text" id="hovaten">
+                </div>
+                <div class="form-row">
+                    <span>Số điện thoại:</span>
+                    <input type="text" id="sodienthoai">
+                </div>
+                <div class="form-row">
+                    <span>Địa chỉ:</span>
+                    <input type="text" id="diachi">
+                </div>
+            </div>
+            <div class="form-column">
+                <div class="form-row">
+                    <span>Tài khoản:</span>
+                    <input type="text" id="taikhoan">
+                </div>
+                <div class="form-row">
+                    <span>Mật khẩu:</span>
+                    <input type="password" id="matkhau">
+                </div>
+                <div class="form-row">
+                    <span>Vai trò:</span>
+                    <select id="vaitro">
+                        <option value="nhanvien">Nhân viên</option>
+                        <option value="quantri">Quản trị</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="button-container">
+            <button class="add-btn" onclick="addEmployee()">Thêm</button>
+            <button class="edit-btn" onclick="updateEmployee()" disabled id="edit-btn">Lưu</button>
+            <button class="cancel-btn" onclick="cancelEdit()">Quay lại</button>
+        </div>
+    </div>
+
+    <table id="employee-table">
+        <thead>
+            <tr>
+                <th>MNV</th>
+                <th>Họ và tên</th>
+                <th>Số điện thoại</th>
+                <th>Địa chỉ</th>
+                <th>Tài khoản</th>
+                <th>Mật khẩu</th>
+                <th>Chức vụ</th>
+                <th>Thao tác </th>
+            </tr>
+        </thead>
+        <tbody id="employee-list">
+        </tbody>
+    </table>
+
+    <script>
+        let employees = [];
+        let editingIndex = -1;
+
+        function addEmployee() {
+            let employee = {
+                id: employees.length + 1,
+                name: document.getElementById("hovaten").value,
+                phone: document.getElementById("sodienthoai").value,
+                address: document.getElementById("diachi").value,
+                username: document.getElementById("taikhoan").value,
+                password: document.getElementById("matkhau").value,
+                role: document.getElementById("vaitro").value
+            };
+            employees.push(employee);
+            renderTable();
+            clearForm();
+        }
+        function renderTable() {
+            let tbody = document.getElementById("employee-list");
+            tbody.innerHTML = "";
+            employees.forEach((employee, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${employee.id}</td>
+                        <td>${employee.name}</td>
+                        <td>${employee.phone}</td>
+                        <td>${employee.address}</td>
+                        <td>${employee.username}</td>
+                        <td>${employee.password}</td>
+                        <td>${employee.role === "nhanvien" ? "Nhân viên" : "Quản trị"}</td>
+                        <td class="action-btns">
+                            <button class="edit-btn" onclick="editEmployee(${index})">Sửa</button>
+                            <button class="delete-btn" onclick="deleteEmployee(${index})">Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        function editEmployee(index) {
+            let employee = employees[index];
+            document.getElementById("hovaten").value = employee.name;
+            document.getElementById("sodienthoai").value = employee.phone;
+            document.getElementById("diachi").value = employee.address;
+            document.getElementById("taikhoan").value = employee.username;
+            document.getElementById("matkhau").value = employee.password;
+            document.getElementById("vaitro").value = employee.role;
+            editingIndex = index;
+            document.getElementById("edit-btn").disabled = false;
+        }
+        function updateEmployee() {
+            employees[editingIndex] = {
+                ...employees[editingIndex],
+                name: document.getElementById("hovaten").value,
+                phone: document.getElementById("sodienthoai").value,
+                address: document.getElementById("diachi").value
+            };
+            renderTable();
+            clearForm();
+        }
+        function deleteEmployee(index) {
+            employees.splice(index, 1);
+            renderTable();
+        }
+
+        function cancelEdit() {
+            clearForm();
+        }
+        function clearForm() {
+            document.getElementById("edit-btn").disabled = true;
+            document.querySelectorAll("input").forEach(input => input.value = "");
+        }
+    </script>
+</body>
+</html>
