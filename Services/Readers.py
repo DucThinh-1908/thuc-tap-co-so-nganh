@@ -9,8 +9,6 @@ class ServiceReaders:
         readers = db.query(Readers).all()  # Trả về danh sách
         return readers
 
-
-
     @staticmethod
     def add_reader(db: Session, reader_data: ReadersSchema):
         new_reader = Readers(
