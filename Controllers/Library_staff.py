@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from Services.Library_staff import ServiceLibraryStaff
-from Models.Library_staff import Library_Staff, Library_StaffSchema
+from Models.Library_staff import Library_staff, Library_staffSchema
 from typing import List
 from sqlalchemy.exc import IntegrityError
 
@@ -25,7 +25,7 @@ def get_all_staff(db: Session = Depends(get_db)):
 
 
 @router.post("/add")
-def add_staff(staff: Library_StaffSchema, db: Session = Depends(get_db)):
+def add_staff(staff: Library_staffSchema, db: Session = Depends(get_db)):
     try:
         return ServiceLibraryStaff.add_staff(db, staff)
     except ValueError as e:
