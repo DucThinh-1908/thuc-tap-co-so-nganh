@@ -37,3 +37,12 @@ class ServiceLibraryStaff:
     @staticmethod
     def search_staff(db: Session, name: str):
         return db.query(Library_staff).filter(Library_staff.name.ilike(f"%{name}%")).all() 
+    
+    @staticmethod
+    def delete_staff(db: Session, staff_id: int):
+        staff = db.query(Library_staff).filter(Library_staff.id == staff_id).first()  
+        if not staff:
+            return None  # Không tìm thấy nhân viên với ID này
+        db.delete(staff)  # Xóa nhân viên khỏi cơ sở dữ liệu
+        db.commit()  # Cam kết thay đổi
+        return {"message": "Staff deleted successfully"}
