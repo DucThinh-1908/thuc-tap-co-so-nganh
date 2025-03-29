@@ -2,205 +2,312 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Nhân Viên</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Quản Lý Nhân Viên Thư Viện</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 100vh;
+            background-color: #f4f4f9;
             margin: 0;
-        }
-        #box {
-            width: 1100px;
             padding: 20px;
-            border-radius: 10px;
-            background-color: #fff;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
         }
-        #tieude { color: blue; text-align: center; }
-        #form-container { display: flex; justify-content: space-between; }
-        .form-column { width: 48%; display: flex; flex-direction: column; gap: 15px; }
-        .form-row { display: flex; align-items: center; justify-content: space-between; }
-        .form-row span { width: 120px; font-weight: bold; }
-        .form-row input, .form-row select {
-            width: 60%;
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .form-group input {
+            width: 48%;
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        #button-container { text-align: center; margin-top: 20px; }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
         button {
-            padding: 8px 12px;
-            margin: 5px;
+            background-color: #007bff;
+            color: white;
             border: none;
+            padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
             transition: 0.3s;
         }
-        .add-btn { background-color: #28a745; color: white; }
-        .edit-btn { background-color: #ffc107; color: black; }
-        .delete-btn { background-color: #dc3545; color: white; }
-        .cancel-btn { background-color: #6c757d; color: white; }
-        button:hover { opacity: 0.8; }
-        #employee-table {
-            width: 900px;
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
             border-collapse: collapse;
-            background-color: #fff;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
-        #employee-table th, #employee-table td {
-            padding: 10px;
+        table, th, td {
             border: 1px solid #ddd;
-            text-align: center;
         }
-        #employee-table th { background-color: #007bff; color: white; }
-        #employee-table tr:hover { background-color: #f1f1f1; }
-        .action-btns { display: flex; justify-content: center; gap: 5px; }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
     </style>
 </head>
 <body>
-    <div id="box">
-        <h2 id="tieude">Quản lý nhân viên thư viện</h2>
-
-        <div id="form-container">
-            <div class="form-column">
-                <div class="form-row">
-                    <span>Họ và tên:</span>
-                    <input type="text" id="hovaten">
-                </div>
-                <div class="form-row">
-                    <span>Số điện thoại:</span>
-                    <input type="text" id="sodienthoai">
-                </div>
-                <div class="form-row">
-                    <span>Địa chỉ:</span>
-                    <input type="text" id="diachi">
-                </div>
-            </div>
-            <div class="form-column">
-                <div class="form-row">
-                    <span>Tài khoản:</span>
-                    <input type="text" id="taikhoan">
-                </div>
-                <div class="form-row">
-                    <span>Mật khẩu:</span>
-                    <input type="password" id="matkhau">
-                </div>
-                <div class="form-row">
-                    <span>Vai trò:</span>
-                    <select id="vaitro">
-                        <option value="nhanvien">Nhân viên</option>
-                        <option value="quantri">Quản trị</option>
-                    </select>
-                </div>
-            </div>
+    <div class="container">
+        <button onclick="goBack()">Quay lại</button>
+        <h2>Quản Lý Nhân Viên Thư Viện</h2>
+        <div class="buttons">
+            <input type="text" id="namee" placeholder="Nhập tên nhân viên">
+            <button onclick="searchStaff()">Tìm Kiếm</button>
+            <input type="text" id="idd" placeholder="Nhập mã nhân viên">
+            <button onclick="deleteStaff()">Xoá</button>
         </div>
-
-        <div id="button-container">
-            <button class="add-btn" onclick="addEmployee()">Thêm</button>
-            <button class="edit-btn" onclick="updateEmployee()" disabled id="edit-btn">Lưu</button>
-            <button class="cancel-btn" onclick="cancelEdit()">Quay lại</button>
+        <div class="form-group">
+            <input type="text" id="role" placeholder="Role">
+            <input type="text" id="name" placeholder="Họ và tên">
         </div>
+        <div class="form-group">
+            <input type="text" id="phone" placeholder="Số điện thoại">
+            <input type="text" id="address" placeholder="Địa chỉ">
+        </div>
+        <div class="form-group">
+            <input type="text" id="user_name" placeholder="User_name">
+            <input type="text" id="password" placeholder="Mật khẩu">
+        </div>
+        <div class="buttons">
+            <button onclick="resetFields()">Reset</button>
+            <button onclick="addStaff()">Thêm</button>
+            <button onclick="updateStaff()">Sửa</button>
+        </div>
+        <table id="staffTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ và Tên</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>User_name</th>
+                    <th>Mật khẩu</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dữ liệu sẽ được thêm vào đây -->
+            </tbody>
+        </table>
     </div>
-
-    <table id="employee-table">
-        <thead>
-            <tr>
-                <th>MNV</th>
-                <th>Họ và tên</th>
-                <th>Số điện thoại</th>
-                <th>Địa chỉ</th>
-                <th>Tài khoản</th>
-                <th>Mật khẩu</th>
-                <th>Chức vụ</th>
-                <th>Thao tác </th>
-            </tr>
-        </thead>
-        <tbody id="employee-list">
-        </tbody>
-    </table>
-
-    <script>
-        let employees = [];
-        let editingIndex = -1;
-
-        function addEmployee() {
-            let employee = {
-                id: employees.length + 1,
-                name: document.getElementById("hovaten").value,
-                phone: document.getElementById("sodienthoai").value,
-                address: document.getElementById("diachi").value,
-                username: document.getElementById("taikhoan").value,
-                password: document.getElementById("matkhau").value,
-                role: document.getElementById("vaitro").value
-            };
-            employees.push(employee);
-            renderTable();
-            clearForm();
-        }
-        function renderTable() {
-            let tbody = document.getElementById("employee-list");
-            tbody.innerHTML = "";
-            employees.forEach((employee, index) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${employee.id}</td>
-                        <td>${employee.name}</td>
-                        <td>${employee.phone}</td>
-                        <td>${employee.address}</td>
-                        <td>${employee.username}</td>
-                        <td>${employee.password}</td>
-                        <td>${employee.role === "nhanvien" ? "Nhân viên" : "Quản trị"}</td>
-                        <td class="action-btns">
-                            <button class="edit-btn" onclick="editEmployee(${index})">Sửa</button>
-                            <button class="delete-btn" onclick="deleteEmployee(${index})">Xóa</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        function editEmployee(index) {
-            let employee = employees[index];
-            document.getElementById("hovaten").value = employee.name;
-            document.getElementById("sodienthoai").value = employee.phone;
-            document.getElementById("diachi").value = employee.address;
-            document.getElementById("taikhoan").value = employee.username;
-            document.getElementById("matkhau").value = employee.password;
-            document.getElementById("vaitro").value = employee.role;
-            editingIndex = index;
-            document.getElementById("edit-btn").disabled = false;
-        }
-        function updateEmployee() {
-            employees[editingIndex] = {
-                ...employees[editingIndex],
-                name: document.getElementById("hovaten").value,
-                phone: document.getElementById("sodienthoai").value,
-                address: document.getElementById("diachi").value
-            };
-            renderTable();
-            clearForm();
-        }
-        function deleteEmployee(index) {
-            employees.splice(index, 1);
-            renderTable();
-        }
-
-        function cancelEdit() {
-            clearForm();
-        }
-        function clearForm() {
-            document.getElementById("edit-btn").disabled = true;
-            document.querySelectorAll("input").forEach(input => input.value = "");
-        }
-    </script>
 </body>
+<script>
+    function navigateTo(page) {
+        window.location.href = page;
+    }
+
+    function goBack() {
+        window.location.href = "management.html"; // Quay lại trang login
+    }
+
+    function resetFields() {
+        document.getElementById("user_name").value = "";
+        document.getElementById("name").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("address").value = "";
+        document.getElementById("phone").value = "";
+        document.getElementById("role").value = "";
+    }
+</script>
+
+<script>
+    function loadStaffs() {
+        $.ajax({
+            url: "http://127.0.0.1:8000/staff/staff",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                let tableBody = $("#staffTable tbody");
+                tableBody.empty();
+
+                data.forEach(staff => {
+                    let newRow = `<tr>
+                        <td>${staff.id}</td>
+                        <td>${staff.name}</td>
+                        <td>${staff.phone}</td>
+                        <td>${staff.address}</td>
+                        <td>${staff.user_name}</td>
+                        <td>${staff.password}</td>
+                        <td>${staff.role}</td>
+                    </tr>`;
+                    tableBody.append(newRow);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        loadStaffs(); // Gọi hàm đúng
+    });
+</script>
+
+
+<script>
+    function searchStaff() {
+        var staff_name = $("#namee").val(); // Lấy giá trị từ input
+    
+        if (!staff_name) {
+            alert("Vui lòng nhập tên nhân viên!");
+            return;
+        }
+    
+        $.ajax({
+            type: "GET",
+            url: `http://127.0.0.1:8000/staff/staff/search?name=${staff_name}`, 
+            contentType: "application/json",
+            success: function(response) {
+                if (response && response.length > 0) { 
+                    let tableBody = $("#staffTable tbody");
+                    tableBody.empty(); 
+                    response.forEach(function(staff) { 
+                        let newRow = `<tr>
+                            <td>${staff.id}</td>
+                            <td>${staff.name}</td>
+                            <td>${staff.phone}</td>
+                            <td>${staff.address}</td>
+                            <td>${staff.user_name}</td>
+                            <td>${staff.password}</td>
+                            <td>${staff.role}</td>
+                            </tr>`;
+                        tableBody.append(newRow);
+                    });
+                } else {
+                    alert("Không tìm thấy nhân viên!");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Chi tiết lỗi:", xhr);
+                alert("Không tìm thấy nhân viên hoặc lỗi server!");
+            }
+        });
+    }
+    </script>
+
+<script>
+    function addStaff() {
+        const staff = {
+            name: $("#name").val().trim(),
+            phone: $("#phone").val().trim(),
+            address: $("#address").val().trim(),
+            user: {
+                user_name: $("#user_name").val().trim(),
+                password: $("#password").val().trim(),
+                role: parseInt($("#role").val().trim())
+            }
+        };
+
+        $.ajax({
+            url: "http://127.0.0.1:8000/staff/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(staff),
+            success: function(response) {
+                alert("Thêm thành công!");
+                console.log("Response:", response);
+            },
+            error: function(xhr) {
+                const errorDetail = xhr.responseJSON?.detail?.[0]?.msg || "Lỗi không xác định";
+                alert(`Lỗi: ${errorDetail}`);
+                console.error("Full error:", xhr.responseJSON);
+            }
+        });
+    }
+</script>
+
+<script>
+    function updateStaff() {
+        const staff_id = $("#manhanvien").val().trim();
+
+        const staff = {
+            name: $("#hoten").val().trim() || null,
+            phone: $("#sodienthoai").val().trim() || null,
+            address: $("#diachi").val().trim() || null,
+            user: {
+                user_name: $("#user_name").val().trim() || null,
+                password: $("#password").val().trim() || null,
+                role: parseInt($("#role").val().trim()) || null
+            }
+        };
+
+        if (!staff_id) {
+            alert("Mã nhân viên không được để trống!");
+            return;
+        }
+
+        console.log("Dữ liệu gửi đi:", JSON.stringify(staff));
+
+        $.ajax({
+            url: `http://127.0.0.1:8000/staff/staff/${staff_id}`,
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(staff),
+            success: function(response) {
+                alert("Cập nhật thành công!");
+                console.log("Dữ liệu cập nhật:", response);
+            },
+            error: function(xhr) {
+                const errorDetail = xhr.responseJSON?.detail?.[0]?.msg || "Lỗi không xác định";
+                alert(`Lỗi: ${errorDetail}`);
+                console.error("Lỗi chi tiết:", xhr.responseJSON);
+            }
+        });
+    }
+</script>
+
+<script>
+    function deleteStaff() {
+        const id = parseInt($("#idd").val().trim());
+        console.log("Đang gửi yêu cầu xoá với ID:", id);
+    
+        if (isNaN(id)) {
+            alert("Mã nhân viên phải là số và không được để trống!");
+            return;
+        }
+    
+        $.ajax({
+            url: `http://127.0.0.1:8000/staff/staff/${id}`, // Đảm bảo URL đúng
+            type: "DELETE",
+            contentType: "application/json",
+            success: function() {
+                alert("Xoá nhân viên thành công!");
+                location.reload();
+            },
+            error: function(xhr) {
+                console.error("Lỗi chi tiết:", xhr);
+            }
+        });
+    }
+    </script>
+    
 </html>

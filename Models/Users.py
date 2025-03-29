@@ -5,10 +5,15 @@ from pydantic import BaseModel, Field
 class UserModel(Base):
     __tablename__ = "Users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True,autoincrement=True)
     user_name = Column(String(100), unique=True, index=True)
     password = Column(String(100))
     role = Column(Integer)
+
+class UserSchema(BaseModel):
+    user_name: str
+    password: str
+    role: int
 
 # Pydantic models for data validation
 class UserCreate(BaseModel):
@@ -24,7 +29,7 @@ class UserUpdate(BaseModel):
 class UserLogin(BaseModel):
     user_name: str
     password: str
-from sqlalchemy import Column, String
+
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -46,6 +51,7 @@ class ReadersSchema(BaseModel):
     Class: str | None = None
     address: str | None = None
     phone: str | None = None
+
     class Config:
         from_attributes = True
 class UserResponse(BaseModel):

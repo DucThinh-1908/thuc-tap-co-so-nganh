@@ -32,8 +32,8 @@ def add_staff(staff: Library_staffSchema, db: Session = Depends(get_db)):
         return {"error": str(e)}
 
 
-@router.put("/staff/{staff_id}")
-def edit_staff(staff_id: int, updated_data: dict, db: Session = Depends(get_db)):
+@router.put("/staff/{id}")
+def update_staff(staff_id: int, updated_data: dict, db: Session = Depends(get_db)):
     updated_staff = ServiceLibraryStaff.update_staff(db, staff_id, updated_data)
     if updated_staff:
         return {"message": "Staff updated successfully", "staff": updated_staff}
@@ -42,7 +42,4 @@ def edit_staff(staff_id: int, updated_data: dict, db: Session = Depends(get_db))
 
 @router.delete("/staff/{staff_id}")
 def delete_staff(staff_id: int, db: Session = Depends(get_db)):
-    deleted_staff = ServiceLibraryStaff.delete_staff(db, staff_id)
-    if deleted_staff:
-        return {"message": "Staff deleted successfully", "staff": deleted_staff}
-    return {"message": "Staff not found"}
+    return ServiceLibraryStaff.delete_staff(db, staff_id)

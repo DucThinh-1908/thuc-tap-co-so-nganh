@@ -4,10 +4,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Thông tin kết nối SQL Server Tùng sửa sửaaa
-SERVER = "ADMIN"
+SERVER = "DESKTOP-UHPSETD\SQLEXPRESS"
 DATABASE = "qlsach1"
 USERNAME = "sa"
-PASSWORD = "Xuanxam2005."
+PASSWORD = "Tungthinh2002@"
 DRIVER = "ODBC Driver 17 for SQL Server"
 
 # Tạo chuỗi kết nối
