@@ -6,7 +6,7 @@ from Controllers.statistics import router as statistics_router
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 from Controllers.Library_staff import router as Library_staff_router
-
+from Controllers.BorrowTicket import router as borrow_router_router
 # Tạo FastAPI app
 app = FastAPI(title="Users API MVC", description="CRUD API cho bảng Users với SQL Server sử dụng mô hình MVC")
 
@@ -33,6 +33,7 @@ app.include_router(reader_router)
 app.include_router(book_router)
 app.include_router(statistics_router)
 app.include_router(Library_staff_router)
+app.include_router(borrow_router_router)
 # Endpoint mặc định
 @app.get("/", tags=["root"])
 def read_root():

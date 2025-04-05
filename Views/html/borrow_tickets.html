@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Mượn Sách</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .section { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f5f5f5; }
+        input, select { padding: 6px; margin: 4px 0; width: 200px; }
+        button { padding: 8px 16px; margin: 4px; cursor: pointer; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-day { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>QUẢN LÝ MƯỢN SÁCH</h1>
+    
+    <div class="container">
+        <!-- Phần nhập phiếu mượn -->
+        <div class="section">
+            <h2>NHẬP PHIẾU MƯỢN</h2>
+            <div>
+                <label>Mã sinh viên:</label>
+                <input type="text" id="maDocGia" required>
+            </div>
+            <div>
+                <label>Ngày hẹn trả:</label>
+                <input type="date" id="ngayHenTra">
+            </div>
+            
+            <div class="calendar" id="calendar"></div>
+            
+            <h3>Danh sách sách</h3>
+            <select id="danhSachSach">
+                <!-- Options sẽ được thêm bằng JavaScript -->
+            </select>
+            <button onclick="themSach()">Thêm sách</button>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="taoPhieuMoi()">Thêm phiếu</button>
+                <button onclick="resetForm()">Reset</button>
+            </div>
+        </div>
+
+        <!-- Phần danh sách phiếu mượn -->
+        <div class="section">
+            <h2>DANH SÁCH PHIẾU MƯỢN</h2>
+            <table id="tblPhieuMuon">
+                <thead>
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Người mượn</th>
+                        <th>Ngày mượn</th>
+                        <th>Ngày trả</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Phần chi tiết phiếu -->
+    <div class="section" style="margin-top: 20px;">
+        <h2>CHI TIẾT PHIẾU MƯỢN</h2>
+        <table id="tblChiTiet">
+            <thead>
+                <tr>
+                    <th>Mã sách</th>
+                    <th>Tên sách</th>
+                    <th>Giá tiền</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <p><strong>Tổng tiền:</strong> <span id="tongTien">0</span> VNĐ</p>
+    </div>
+
+    <script>
+        // Biến toàn cục
+        let selectedBooks = [];
+        let currentPhieuId = null;
+
+        // Khởi tạo
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDanhSachSach();
+            await loadDanhSachPhieu();
+            renderCalendar();
+        });
+
+        // Load danh sách sách từ API
+        async function loadDanhSachSach() {
+            const response = await fetch('http://localhost:8000/api/sach');
+            const books = await response.json();
+            const select = document.getElementById('danhSachSach');
+            select.innerHTML = books.map(b => `<option value="${b.MA_SACH}">${b.NAME} (${b.MA_SACH})</option>`).join('');
+        }
+
+        // Thêm sách vào danh sách tạm
+        function themSach() {
+            const select = document.getElementById('danhSachSach');
+            const selectedBook = {
+                maSach: select.value,
+                tenSach: select.options[select.selectedIndex].text
+            };
+            selectedBooks.push(selectedBook);
+            alert(`Đã thêm sách: ${selectedBook.tenSach}`);
+        }
+
+        // Tạo phiếu mượn mới
+        async function taoPhieuMoi() {
+            const maDocGia = document.getElementById('maDocGia').value;
+            const ngayHenTra = document.getElementById('ngayHenTra').value;
+            
+            const newPhieu = {
+                MA_PHIEU: `PM${Date.now().toString().slice(-4)}`,
+                MA_DOC_GIA: maDocGia,
+                DATE_START: new Date().toISOString().split('T')[0],
+                DATE_END: ngayHenTra
+            };
+
+            try {
+                const response = await fetch('http://localhost:8000/api/phieu-muon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newPhieu)
+                });
+                
+                if(response.ok) {
+                    // Thêm sách vào phiếu
+                    for(const book of selectedBooks) {
+                        await fetch(`http://localhost:8000/api/phieu-muon/${newPhieu.MA_PHIEU}/them-sach/${book.maSach}`, {
+                            method: 'POST'
+                        });
+                    }
+                    alert('Tạo phiếu thành công!');
+                    resetForm();
+                    loadDanhSachPhieu();
+                }
+            } catch (error) {
+                alert('Lỗi khi tạo phiếu: ' + error.message);
+            }
+        }
+
+        // Load danh sách phiếu
+        async function loadDanhSachPhieu() {
+            const response = await fetch('http://localhost:8000/api/phieu-muon');
+            const phieuList = await response.json();
+            const tbody = document.querySelector('#tblPhieuMuon tbody');
+            tbody.innerHTML = phieuList.map(phieu => `
+                <tr>
+                    <td>${phieu.MA_PHIEU}</td>
+                    <td>${phieu.reader?.NAME || ''}</td>
+                    <td>${phieu.DATE_START}</td>
+                    <td>${phieu.DATE_END}</td>
+                    <td>${phieu.TRANG_THAI}</td>
+                    <td>
+                        <button onclick="xemChiTiet('${phieu.MA_PHIEU}')">Xem</button>
+                        <button onclick="traSach('${phieu.MA_PHIEU}')">Trả sách</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Xem chi tiết phiếu
+        async function xemChiTiet(maPhieu) {
+            currentPhieuId = maPhieu;
+            const response = await fetch(`http://localhost:8000/api/phieu-muon/${maPhieu}/details`);
+            const data = await response.json();
+            
+            const tbody = document.querySelector('#tblChiTiet tbody');
+            tbody.innerHTML = data.books.map(book => `
+                <tr>
+                    <td>${book.MA_SACH}</td>
+                    <td>${book.NAME}</td>
+                    <td>${book.GIA_TIEN.toLocaleString()}</td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('tongTien').textContent = data.total.toLocaleString();
+        }
+
+        // Trả sách
+        async function traSach(maPhieu) {
+            if(confirm('Xác nhận trả sách?')) {
+                await fetch(`http://localhost:8000/api/phieu-muon/${maPhieu}/return`, {
+                    method: 'PUT'
+                });
+                loadDanhSachPhieu();
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('maDocGia').value = '';
+            document.getElementById('ngayHenTra').value = '';
+            selectedBooks = [];
+        }
+
+        // Render lịch
+        function renderCalendar() {
+            // Logic render lịch ở đây
+        }
+    </script>
+</body>
+</html>
