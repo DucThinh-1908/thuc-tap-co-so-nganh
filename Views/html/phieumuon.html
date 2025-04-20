@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Mượn Sách</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .section { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f5f5f5; }
+        input, select { padding: 6px; margin: 4px 0; width: 200px; }
+        button { padding: 8px 16px; margin: 4px; cursor: pointer; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-day { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="goBack()">Quay lại</button>
+    <h1>QUẢN LÝ MƯỢN SÁCH</h1>
+    
+    <div class="container">
+        <!-- Phần nhập phiếu mượn -->
+        <div class="section">
+            <h2>NHẬP PHIẾU MƯỢN</h2>
+            <input type="text" id = "borrow_id" placeholder="Nhap ma phieu">
+            <input type="text" id = "masv" placeholder="Nhap ma sinh vien">
+            <input type="date" id = "end_date" placeholder="ngay hen tra">
+            <input type="text" id = "book_id" placeholder="Nhap ma sach">
+            
+            <div class="calendar" id="calendar"></div>
+            
+            <h3>Danh sách sách</h3>
+            <table id="bookTable">
+                <thead>
+                    <tr>
+                        <th>Mã Sách</th>
+                        <th>Tên Sách</th>
+                        <th>Số Lượng</th>
+                        <th>Giá tiền</th>
+                        <th>Năm Xuất Bản</th>
+                        <th>Mã nhà xuất bản</th>
+                        <th>Mã tác giả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu sẽ được thêm vào đây -->
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="taoPhieuMoi()">Thêm phiếu</button>
+                <button onclick="resetFields()">Reset</button>
+            </div>
+        </div>
+
+        <!-- Phần danh sách phiếu mượn -->
+        <div class="section">
+            <input type="text" name="" id="">
+            <button>Tìm kiếm</button>
+            <button onclick="deleteBorrow">Xoá</button>
+            <h2>DANH SÁCH PHIẾU MƯỢN</h2>
+            <table id="tblPhieuMuon">
+                <thead>
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Người mượn</th>
+                        <th>Ngày mượn</th>
+                        <th>Ngày trả</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Phần chi tiết phiếu -->
+    <div class="section" style="margin-top: 20px;">
+        <h2>CHI TIẾT PHIẾU MƯỢN</h2>
+        <table id="tblChiTiet">
+            <thead>
+                <tr>
+                    <th>Mã sách</th>
+                    <th>Tên sách</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</body>
+
+<script>
+    function resetFields() {
+        document.getElementById("borrow_id").value = "";
+        document.getElementById("end_date").value = "";
+        document.getElementById("masv").value = "";
+        document.getElementById("book_id").value = "";
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function goBack() {
+        window.location.href = "management.html";
+    }
+</script>
+
+<script>
+    function loadBooks() {
+        $.ajax({
+            url: "http://127.0.0.1:8000/books/books",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                let tableBody = $("#bookTable tbody");
+                tableBody.empty();  // Xóa dữ liệu cũ
+
+                data.forEach(book => {
+                    let newRow = `<tr>
+                        <td>${book.book_id}</td>
+                        <td>${book.name}</td>
+                        <td>${book.quantity}</td>
+                        <td>${book.price}</td>
+                        <td>${book.published_year}</td>
+                        <td>${book.publisher_id}</td>
+                        <td>${book.author_id}</td>
+                    </tr>`;
+                    tableBody.append(newRow);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        loadBooks(); // Gọi khi trang tải
+    });
+</script>
+</html>
