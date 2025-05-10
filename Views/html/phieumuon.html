@@ -25,8 +25,12 @@
         <div class="section">
             <h2>NHẬP PHIẾU MƯỢN</h2>
             <input type="text" id = "borrow_id" placeholder="Nhap ma phieu">
-            <input type="text" id = "masv" placeholder="Nhap ma sinh vien">
-            <input type="date" id = "end_date" placeholder="ngay hen tra">
+            <input type="text" id = "masv" placeholder="reader_id">
+            <label for="">Ngay muon</label>
+            <input type="text" id = "start_date" placeholder="ngay muon">
+            <br>
+            <label for="">Ngay hen tra</label>
+            <input type="text" id = "end_date" placeholder="hen tra">
             <input type="text" id = "book_id" placeholder="Nhap ma sach">
             
             <div class="calendar" id="calendar"></div>
@@ -50,7 +54,7 @@
             </table>
             
             <div style="margin-top: 20px;">
-                <button onclick="taoPhieuMoi()">Thêm phiếu</button>
+                <button onclick="addBorrow()">Thêm phiếu</button>
                 <button onclick="resetFields()">Reset</button>
             </div>
         </div>
@@ -64,6 +68,7 @@
             <table id="tblPhieuMuon">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Mã phiếu</th>
                         <th>Người mượn</th>
                         <th>Ngày mượn</th>
@@ -95,6 +100,7 @@
 <script>
     function resetFields() {
         document.getElementById("borrow_id").value = "";
+        document.getElementById("start_date").value = "";
         document.getElementById("end_date").value = "";
         document.getElementById("masv").value = "";
         document.getElementById("book_id").value = "";
@@ -142,4 +148,150 @@
         loadBooks(); // Gọi khi trang tải
     });
 </script>
+
+<script>
+    function loadBorrows() {
+        $.ajax({
+            url: "http://127.0.0.1:8000/borrows",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                let tableBody = $("#tblPhieuMuon tbody");
+                tableBody.empty();  // Xóa dữ liệu cũ
+
+                data.forEach(borrow => {
+                    const today = new Date();
+                    const endDate = new Date(borrow.end_date);
+                    let statusText = borrow.status;
+
+                    if (borrow.status !== "Returned" && endDate < today) {
+                        statusText = "Qua han";
+                    }
+
+                    let newRow = `<tr>
+                        <td>${borrow.id}</td>
+                        <td>${borrow.ticket_id}</td>
+                        <td>${borrow.reader_id}</td>
+                        <td>${borrow.start_date}</td>
+                        <td>${borrow.end_date}</td>
+                        <td>${statusText}</td>
+                    </tr>`;
+                    tableBody.append(newRow);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        loadBorrows(); // Gọi khi trang tải
+    });
+</script>
+
+
+<script>
+    function loadBorrowDetail() {
+        $.ajax({
+            url: "http://127.0.0.1:8000/borrows/details",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                let tableBody = $("#tblChiTiet tbody");
+                tableBody.empty();  // Xóa dữ liệu cũ
+
+                data.forEach(detail => {
+                    let newRow = `<tr>
+                        <td>${detail.ticket_id}</td>
+                        <td>${detail.book_id}</td>
+                    </tr>`;
+                    tableBody.append(newRow);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        loadBorrowDetail(); // Gọi khi trang tải
+    });
+</script>
+<script>
+    function addBorrow() {
+        // 1. Chuẩn bị dữ liệu
+        const borrowData = {
+            ticket_id: $("#borrow_id").val().trim(),
+            reader_id: $("#masv").val().trim(),
+            start_date: $("#start_date").val().trim().replace(/\//g, '-'), // Chuyển đổi định dạng ngày
+            end_date: $("#end_date").val().trim().replace(/\//g, '-'),
+            book_id: $("#book_id").val().trim()
+        };
+    
+        // 2. Validate cơ bản
+        if (!borrowData.ticket_id || !borrowData.reader_id || 
+            !borrowData.start_date || !borrowData.end_date || !borrowData.book_id) {
+            alert("Vui lòng điền đầy đủ thông tin!");
+            return;
+        }
+        console.log("Payload:", JSON.stringify(borrowData, null, 2));
+    
+        // 3. Gửi request bằng AJAX
+        $.ajax({
+            url: "http://127.0.0.1:8000/borrows/add",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(borrowData),
+            success: function(response) {
+                alert("Thêm phiếu mượn thành công!");
+                resetFields();
+                loadBorrows(); // Làm mới danh sách
+            },
+            error: function(xhr) {
+                // 4. Xử lý lỗi chi tiết
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON?.detail || [];
+                    const errorMsg = errors.map(e => 
+                        `${e.loc.join('.')}: ${e.msg}`
+                    ).join('\n');
+                    alert(`Lỗi nhập liệu:\n${errorMsg}`);
+                } else {
+                    alert(xhr.responseJSON?.detail || "Lỗi không xác định");
+                }
+                console.error("Chi tiết lỗi:", xhr.responseJSON);
+            }
+        });
+    }
+    
+    // Hàm reset form
+    function resetFields() {
+        $("#borrow_id, #masv, #start_date, #end_date, #book_id").val("");
+    }
+    </script>
+
+<script>
+    function deleteBorrow() {
+        const borrowId = prompt("Nhập mã phiếu mượn cần xóa:");
+        if (!borrowId) return;
+
+        if (confirm(`Bạn có chắc chắn muốn xóa phiếu mượn ${borrowId}?`)) {
+            $.ajax({
+                url: `http://127.0.0.1:8000/borrows/${borrowId}`,
+                type: "DELETE",
+                success: function(response) {
+                    alert("Xóa phiếu mượn thành công!");
+                    loadBorrows();
+                    loadBorrowDetail();
+                },
+                error: function(xhr, status, error) {
+                    console.error("Lỗi khi xóa phiếu mượn:", error);
+                    alert("Xóa phiếu mượn thất bại!");
+                }
+            });
+        }
+    }
+</script>
+
 </html>

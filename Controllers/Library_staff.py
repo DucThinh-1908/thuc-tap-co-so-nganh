@@ -4,7 +4,6 @@ from database import get_db
 from Services.Library_staff import ServiceLibraryStaff
 from Models.Library_staff import Library_staff, Library_staffSchema
 from typing import List
-from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(prefix="/staff", tags=["staff"])
 
