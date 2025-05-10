@@ -1,7 +1,7 @@
-CREATE DATABASE qlsach1;
+CREATE DATABASE qlsach5;
 GO
 
-USE qlsach1
+USE qlsach5
 GO
 
 -- Table: Publisher (Nhà xuất bản)
@@ -85,6 +85,14 @@ CREATE TABLE Borrow_ticket_detail (
 );
 GO
 
+CREATE TABLE book_author (
+    book_id VARCHAR(20) NOT NULL,
+    author_id VARCHAR(20) NOT NULL,
+    PRIMARY KEY (book_id, author_id),
+    FOREIGN KEY (book_id) REFERENCES Books(book_id),
+    FOREIGN KEY (author_id) REFERENCES Author(author_id)
+);
+
 -- Thêm dữ liệu vào bảng library_staff
 INSERT INTO library_staff (name, phone, address)
 VALUES 
@@ -132,6 +140,11 @@ INSERT INTO borrow_ticket_detail (ticket_id, book_id)
 VALUES 
     ('T001', 'B001'),
     ('T002', 'B002');
+
+INSERT INTO book_author (book_id, author_id)
+VALUES 
+    ('B001', 'A001'),
+    ('B002', 'A002');
 CREATE PROCEDURE THEM_NV
     @ma_nv VARCHAR(20),
     @name NVARCHAR(255),
@@ -148,8 +161,49 @@ BEGIN
     INSERT INTO Users (id, user_name, password, role)
     VALUES (@ma_nv, @tk, @mk, @role);
 END;
+
+EXEC THEM_NV
+    @ma_nv = 'NV05',
+    @name = N'Nguyễn Văn B',
+    @std = '0123456789',
+    @dc = N'Hà Nội',
+    @tk = 'nv05',
+    @mk = 'matkhau123',
+    @role = 1;
+
 ---------------
+
 CREATE PROCEDURE THEM_SACH
+    @book_id VARCHAR(20),
+    @name NVARCHAR(255),
+    @quantity INT,
+    @price INT,
+    @published_year VARCHAR(20),
+    @publisher_id VARCHAR(20),
+    @author_id VARCHAR(20) -- giả sử chỉ thêm 1 tác giả
+AS
+BEGIN
+    -- Thêm sách
+    INSERT INTO Books (book_id, name, quantity, price, published_year, publisher_id)
+    VALUES (@book_id, @name, @quantity, @price, @published_year, @publisher_id);
+
+    -- Gán sách cho tác giả
+    INSERT INTO book_author (book_id, author_id)
+    VALUES (@book_id, @author_id);
+END;
+
+EXEC THEM_SACH
+    @book_id = 'B005',
+    @name = N'Lập trình SQL',
+    @quantity = 10,
+    @price = 100000,
+    @published_year = '2023',
+    @publisher_id = 'P001',
+    @author_id = 'A001';
+
+
+---------------
+CREATE PROCEDURE THEM_PHIEU
     @p_ticket_id INT,
     @p_book_id INT
 AS
@@ -163,8 +217,12 @@ BEGIN
 END;
 ---------------
 
+EXEC THEM_PHIEU
+    @p_ticket_id = T001,
+    @p_book_id = B002;
+
 -----------
-CREATE PROCEDURE XOA_SACH
+CREATE PROCEDURE XOA_PHIEU
     @p_ticket_id varchar(255),
     @p_book_id varchar(255)
 AS
@@ -192,6 +250,7 @@ BEGIN
     RETURN @total;
 END;
 SELECT dbo.TONG_TIEN('T002');
+-------------
 CREATE PROCEDURE XOA_NV
     @p_manv INT
 AS
@@ -206,7 +265,7 @@ BEGIN
             DELETE FROM borrow_ticket WHERE id = @p_manv;
         END
 
-        -- Xóa tài khoản trong bảng Users trước
+        -- Xóa tài khoản trong bảng Account trước
         DELETE FROM Users WHERE id = @p_manv;
 
         -- Xóa nhân viên trong bảng library_staff
@@ -220,6 +279,7 @@ BEGIN
         PRINT 'Có lỗi xảy ra. Giao dịch bị hủy.';
     END CATCH
 END;
+EXEC XOA_NV @p_manv = 1;
 
 --------------
 CREATE PROCEDURE SUA_NHAN_VIEN
@@ -244,6 +304,17 @@ BEGIN
         VALUES (@tk, @mk, @role, @manv);
     END
 END;
+
+EXEC SUA_NHAN_VIEN
+    @manv = 'NV05',
+    @name = N'Trần Thị C',
+    @std = '0987654321',
+    @dc = N'Hải Phòng',
+    @tk = 'nv05_updated',
+    @mk = 'newpass456',
+    @role = 1;
+-----------------
+
 SELECT * FROM Users;
 SELECT * FROM library_staff;
 SELECT * FROM readers;
@@ -251,4 +322,5 @@ SELECT * FROM borrow_ticket;
 SELECT * FROM borrow_ticket_detail;
 SELECT * FROM books;
 SELECT * FROM publisher;
+select * from book_author
 SELECT * FROM author;
