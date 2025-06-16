@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from database import Base
+from database import Base # Import Base, lớp cơ sở từ declarative_base() dùng để kế thừa khi bạn định nghĩa một bảng mới (model/table)
 from pydantic import BaseModel
 
 
