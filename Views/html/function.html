@@ -63,7 +63,7 @@
         <div class="menu">
             <button onclick="navigateTo('management.html')">Quản lý</button>
             <button onclick="navigateTo('statistics.html')">Thống kê</button>
-            <button onclick="navigateTo('quanlynhanvien.html')">Quản lý nhân viên</button>
+            <button class="admin-only" onclick="navigateTo('quanlynhanvien.html')">Quản lý nhân viên</button>
         </div>
     </div>
 
@@ -76,6 +76,21 @@
             window.location.href = "login.html"; // Quay lại trang login
         }
     </script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const role = localStorage.getItem("role");
+
+        if (role === "0") {
+            const adminButtons = document.querySelectorAll(".admin-only");
+            adminButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+            });
+        }
+    });
+</script>
 
 </body>
 </html>

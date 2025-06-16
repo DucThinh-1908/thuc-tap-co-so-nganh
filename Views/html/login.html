@@ -69,32 +69,43 @@
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    function login() {
-    var username = $("#username").val();  // Đặt đúng tên biến
-    var password = $("#password").val();
-
-    if (!username || !password) {
-        alert("Vui lòng nhập đầy đủ thông tin!");
-        return;
-    }
-
-    $.ajax({
+    function loginUser(username, password) {
+    return $.ajax({
         type: "POST",
-        url: "http://127.0.0.1:8000/users/login/",  // Đổi đúng endpoint nếu cần
+        url: "http://127.0.0.1:8000/users/login/",  // Đổi lại nếu backend của bạn dùng port khác
         contentType: "application/json",
-        data: JSON.stringify({ user_name: username, password: password }),
-        success: function(response) {
-            alert("Đăng nhập thành công!");
-            window.location.href = "function.html";
-        },
-        error: function(xhr) {
-            alert("Đăng nhập thất bại");
-            console.log(xhr)
-        }
+        data: JSON.stringify({ user_name: username, password: password })
     });
 }
-
 </script>
 
+    <script>
+        function login() {
+            var username = $("#username").val();
+            var password = $("#password").val();
+
+            if (!username || !password) {
+                alert("Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+
+            $("#login-btn").prop("disabled", true).text("Đang đăng nhập...");
+
+            loginUser(username, password)
+                .done(function(response) {
+                    alert("Đăng nhập thành công!");
+                    localStorage.setItem("role", response.role);
+                    window.location.href = "function.html";
+                })
+                .fail(function(xhr) {
+                    const err = xhr.responseJSON?.detail || "Đăng nhập thất bại!";
+                    alert(err);
+                    console.error(xhr.responseText);
+                })
+                .always(function () {
+                    $("#login-btn").prop("disabled", false).text("Đăng nhập");
+                });
+        }
+    </script>
 </html>
 

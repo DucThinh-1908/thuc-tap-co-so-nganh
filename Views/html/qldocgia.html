@@ -82,9 +82,9 @@
         <button class="back-btn" onclick="goBack()">Quay lại</button>
         <h2>Quản Lý Độc Giả</h2>
         <input type="text" id="reader_name" placeholder="Nhập tên Độc Giả">
-        <button onclick="searchReader()">Tìm Kiếm</button>
+        <button  onclick="searchReader()">Tìm Kiếm</button>
         <input type="text" id="reader_id" placeholder="Nhập id Độc Giả">
-        <button onclick="deleteReader()">Xoá</button>
+        <button class="admin-only" onclick="deleteReader()">Xoá</button>
         <div class="form-group">
             <input type="text" id="madocgia" placeholder="Mã độc giả">
             <input type="text" id="khoa" placeholder="Khoa">
@@ -99,8 +99,8 @@
         </div>
         <div class="buttons">
             <button onclick="resetFields()">Reset</button>
-            <button onclick="addReader()">Thêm</button>
-            <button onclick="updateReader()">Sửa</button>
+            <button class="admin-only" onclick="addReader()">Thêm</button>
+            <button class="admin-only" onclick="updateReader()">Sửa</button>
         </div>
         <table id="docgiaTable">
             <thead>
@@ -307,4 +307,18 @@ function updateReader() {
     }
 </script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const role = localStorage.getItem("role");
+
+        if (role === "0") {
+            const adminButtons = document.querySelectorAll(".admin-only");
+            adminButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+            });
+        }
+    });
+</script>
 </html>

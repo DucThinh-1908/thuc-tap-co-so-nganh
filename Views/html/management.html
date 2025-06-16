@@ -64,8 +64,8 @@
         <h2>Chức năng</h2>
         <div class="menu">
             <button onclick="navigateTo('qlsach.html')">Quản lý sách</button>
-            <button onclick="navigateTo('phieumuon.html')">Quản lý phiếu mượn</button>
-            <button onclick="navigateTo('qldocgia.html')">Quản lý độc giả</button>
+            <button class="admin-only" onclick="navigateTo('phieumuon.html')">Quản lý phiếu mượn</button>
+            <button class="admin-only" onclick="navigateTo('qldocgia.html')">Quản lý độc giả</button>
         </div>
     </div>
 
@@ -79,5 +79,19 @@
         }
     </script>
 
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const role = localStorage.getItem("role");
+
+        if (role === "0") {
+            const adminButtons = document.querySelectorAll(".admin-only");
+            adminButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+            });
+        }
+    });
+</script>
 </body>
 </html>

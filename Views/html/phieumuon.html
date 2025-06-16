@@ -154,7 +154,7 @@
             </table>
 
             <div style="margin-top: 20px;">
-                <button onclick="addBorrow()">Thêm phiếu</button>
+                <button class="admin-only" onclick="addBorrow()">Thêm phiếu</button>
                 <button onclick="resetFields()">Reset</button>
             </div>
         </div>
@@ -164,8 +164,8 @@
             <h2>DANH SÁCH PHIẾU MƯỢN</h2>
             <input type="text" id="searchInput" placeholder="Tìm theo mã phiếu hoặc reader_id">
             <div style="margin-top: 10px;">
-                <button onclick="searchBorrow()">Tìm kiếm</button>
-                <button onclick="deleteBorrow()">Xoá</button>
+                <button class="admin-only" onclick="searchBorrow()">Tìm kiếm</button>
+                <button class="admin-only" onclick="deleteBorrow()">Xoá</button>
             </div>
             <table id="tblPhieuMuon">
                 <thead>
@@ -374,4 +374,18 @@ function addBorrow() {
     }
 </script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const role = localStorage.getItem("role");
+
+        if (role === "0") {
+            const adminButtons = document.querySelectorAll(".admin-only");
+            adminButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+            });
+        }
+    });
+</script>
 </html>

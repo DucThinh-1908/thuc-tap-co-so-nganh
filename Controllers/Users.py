@@ -65,20 +65,22 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
         )
     return None
 
-@router.post("/login", response_model=UserLogin, status_code=status.HTTP_201_CREATED)
+from fastapi.responses import JSONResponse
+
+@router.post("/login", status_code=status.HTTP_200_OK)
 def login_user(user: UserLogin, db: Session = Depends(get_db)):
-    # Check if username already exists
     existing_user = UserService.get_user_by_username(db, user.user_name)
-    if existing_user.password == user.password:
-        raise HTTPException(
-            status_code=status.HTTP_200_OK,
-            detail="User found"
-        )
-    else: 
+    
+    if existing_user is None or existing_user.password != user.password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
+            detail="Sai thông tin đăng nhập"
         )
+    return {
+        "user_name": existing_user.user_name,
+        "role": existing_user.role
+    }
+
 # Các route của readers cần đặt trước route có {user_id}
 @router.get("/{user_id}", response_model=UserResponse)
 def read_user(user_id: int, db: Session = Depends(get_db)):
