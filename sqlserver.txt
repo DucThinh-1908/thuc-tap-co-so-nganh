@@ -1,7 +1,7 @@
-CREATE DATABASE qlsach5;
+CREATE DATABASE qlsach7;
 GO
 
-USE qlsach5
+USE qlsach7
 GO
 
 -- Table: Publisher (Nhà xuất bản)
@@ -104,7 +104,6 @@ INSERT INTO Account (user_name, password, role)
 VALUES 
     ('admin', 'admin123','1'),
     ('staff1', 'staff123','0');
-
 -- Thêm dữ liệu vào bảng reader
 INSERT INTO readers (reader_id, name, phone, address, faculty, class)
 VALUES
@@ -145,8 +144,7 @@ INSERT INTO book_author (book_id, author_id)
 VALUES 
     ('B001', 'A001'),
     ('B002', 'A002');
-CREATE PROCEDURE THEM_NV
-    @ma_nv VARCHAR(20),
+ALTER PROCEDURE THEM_NV
     @name NVARCHAR(255),
     @std VARCHAR(255),
     @dc NVARCHAR(255),
@@ -155,57 +153,121 @@ CREATE PROCEDURE THEM_NV
     @role INT
 AS
 BEGIN
-    INSERT INTO library_staff (id, name, phone, address)
-    VALUES (@ma_nv, @name, @std, @dc);
-    
-    INSERT INTO Account(id, user_name, password, role)
-    VALUES (@ma_nv, @tk, @mk, @role);
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Kiểm tra tên đăng nhập chưa tồn tại
+        IF EXISTS (SELECT 1 FROM Account WHERE user_name = @tk)
+        BEGIN
+            RAISERROR('Tên đăng nhập đã tồn tại', 16, 1);
+            RETURN;
+        END
+        
+        
+        -- Thêm vào library_staff (sử dụng IDENTITY tự động)
+        INSERT INTO library_staff (name, phone, address)
+        VALUES (@name, @std, @dc);
+     
+        -- Thêm vào Account với cùng ID
+        INSERT INTO Account (user_name, password, role)
+        VALUES (@tk, @mk, @role);
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
 END;
-
+select * from Library_staff
 EXEC THEM_NV
-    @ma_nv = 'NV05',
-    @name = N'Nguyễn Văn B',
+    @name = N'Nguyễn Văn A',
     @std = '0123456789',
-    @dc = N'Hà Nội',
-    @tk = 'nv05',
-    @mk = 'matkhau123',
+    @dc = N'123 Đường ABC',
+    @tk = 'nva',
+    @mk = 'password123',
     @role = 1;
 
 ---------------
 
-CREATE PROCEDURE THEM_SACH
+ALTER PROCEDURE THEM_SACH
     @book_id VARCHAR(20),
     @name NVARCHAR(255),
     @quantity INT,
     @price INT,
     @published_year VARCHAR(20),
     @publisher_id VARCHAR(20),
-    @author_id VARCHAR(20) -- giả sử chỉ thêm 1 tác giả
+    @author_id VARCHAR(20)
 AS
 BEGIN
-    -- Thêm sách
-    INSERT INTO Books (book_id, name, quantity, price, published_year, publisher_id)
-    VALUES (@book_id, @name, @quantity, @price, @published_year, @publisher_id);
-
-    -- Gán sách cho tác giả
-    INSERT INTO book_author (book_id, author_id)
-    VALUES (@book_id, @author_id);
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Kiểm tra mã sách chưa tồn tại
+        IF EXISTS (SELECT 1 FROM Books WHERE book_id = @book_id)
+        BEGIN
+            RAISERROR('Mã sách đã tồn tại trong hệ thống', 16, 1);
+            RETURN;
+        END
+        
+        -- Kiểm tra nhà xuất bản tồn tại
+        IF NOT EXISTS (SELECT 1 FROM Publisher WHERE publisher_id = @publisher_id)
+        BEGIN
+            RAISERROR('Nhà xuất bản không tồn tại', 16, 1);
+            RETURN;
+        END
+        
+        -- Kiểm tra tác giả tồn tại
+        IF NOT EXISTS (SELECT 1 FROM Author WHERE author_id = @author_id)
+        BEGIN
+            RAISERROR('Tác giả không tồn tại', 16, 1);
+            RETURN;
+        END
+        
+        -- Thêm sách vào bảng Books (có cả author_id)
+        INSERT INTO Books (book_id, name, quantity, price, published_year, publisher_id, author_id)
+        VALUES (@book_id, @name, @quantity, @price, @published_year, @publisher_id, @author_id);
+        
+        -- Thêm vào bảng book_author (quan hệ nhiều-nhiều)
+        INSERT INTO book_author (book_id, author_id)
+        VALUES (@book_id, @author_id);
+        
+        COMMIT TRANSACTION;
+        PRINT 'Thêm sách thành công';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
 END;
 
+---------------
+select * from Books
 EXEC THEM_SACH
     @book_id = 'B005',
-    @name = N'Lập trình SQL',
+    @name = N'Lap trinh SQL',
     @quantity = 10,
     @price = 100000,
     @published_year = '2023',
     @publisher_id = 'P001',
     @author_id = 'A001';
 
-
----------------
-CREATE PROCEDURE THEM_PHIEU
-    @p_ticket_id INT,
-    @p_book_id INT
+----------------
+ALTER PROCEDURE THEM_PHIEU
+    @p_ticket_id varchar(20),
+    @p_book_id varchar(20)
 AS
 BEGIN
     INSERT INTO borrow_ticket_detail (ticket_id, book_id)
@@ -218,13 +280,13 @@ END;
 ---------------
 
 EXEC THEM_PHIEU
-    @p_ticket_id = T001,
-    @p_book_id = B002;
+    @p_ticket_id = 'T001',
+    @p_book_id = 'B002';
 
 -----------
 CREATE PROCEDURE XOA_PHIEU
-    @p_ticket_id varchar(255),
-    @p_book_id varchar(255)
+    @p_ticket_id varchar(20),
+    @p_book_id varchar(20)
 AS
 BEGIN
     DELETE FROM borrow_ticket_detail
@@ -251,38 +313,57 @@ BEGIN
 END;
 SELECT dbo.TONG_TIEN('T002') AS TONGTIEN;
 -------------
-CREATE PROCEDURE XOA_NV
+ALTER PROCEDURE XOA_NV
     @p_manv INT
 AS
 BEGIN
-    BEGIN TRANSACTION;
-
     BEGIN TRY
-        -- Kiểm tra nếu nhân viên có dữ liệu trong borrow_ticket
-        IF EXISTS (SELECT 1 FROM borrow_ticket WHERE id = @p_manv)
-        BEGIN
-            -- Xóa tất cả các borrow_ticket liên quan
-            DELETE FROM borrow_ticket WHERE id = @p_manv;
-        END
+        BEGIN TRANSACTION;
 
-        -- Xóa tài khoản trong bảng Account trước
+        -- Xóa chi tiết phiếu mượn trước (liên quan đến nhân viên)
+        DELETE FROM Borrow_ticket_detail 
+        WHERE ticket_id IN (SELECT ticket_id FROM Borrow_ticket WHERE id = @p_manv);
+
+        -- Xóa phiếu mượn
+        DELETE FROM Borrow_ticket WHERE id = @p_manv;
+
+        -- Xóa tài khoản (nếu có)
         DELETE FROM Account WHERE id = @p_manv;
 
-        -- Xóa nhân viên trong bảng library_staff
-        DELETE FROM library_staff WHERE id = @p_manv;
+        -- Xóa nhân viên
+        DELETE FROM Library_staff WHERE id = @p_manv;
 
         COMMIT TRANSACTION;
-        PRINT 'Xóa nhân viên thành công.';
+        PRINT N'Xóa nhân viên thành công.';
     END TRY
     BEGIN CATCH
         ROLLBACK TRANSACTION;
-        PRINT 'Có lỗi xảy ra. Giao dịch bị hủy.';
+        PRINT N'Có lỗi xảy ra: ' + ERROR_MESSAGE();
     END CATCH
 END;
-EXEC XOA_NV @p_manv = 1;
 
+
+EXEC XOA_NV @p_manv = 1;
+select * from Account
+
+
+------------
+--Ví dụ sử dụng  “sp_executesql”  trong SQL Server
+--SHA‑256 là thuật toán băm với độ dài 256‑bit trong họ SHA‑2
+DECLARE @username NVARCHAR(255);
+DECLARE @password VARBINARY(64);  -- SHA2_256 trả về 32 bytes = 64 hex chars
+
+-- Gán giá trị
+SET @username = 'admin';
+SET @password = HASHBYTES('SHA2_256', 'admin123');
+
+-- Dùng sp_executesql để thực hiện câu truy vấn có tham số
+EXEC sp_executesql 
+    N'SELECT * FROM Account WHERE user_name = @username AND password = @password',
+    N'@username NVARCHAR(255), @password VARBINARY(64)',
+    @username, @password;
 --------------
-CREATE PROCEDURE SUA_NHAN_VIEN
+ALTER PROCEDURE SUA_NHAN_VIEN
     @manv VARCHAR(255),
     @name NVARCHAR(255),
     @std VARCHAR(255),
@@ -292,21 +373,41 @@ CREATE PROCEDURE SUA_NHAN_VIEN
     @role INT
 AS
 BEGIN
-    IF @manv <> 'NV03'
-    BEGIN
-        UPDATE library_staff
-        SET name = @name, phone = @std, address = @dc
-        WHERE id = @manv;
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-        DELETE FROM Account WHERE id = @manv;
+        IF @manv <> 'NV03'
+        BEGIN
+            -- Cập nhật thông tin nhân viên
+            UPDATE library_staff
+            SET name = @name, phone = @std, address = @dc
+            WHERE id = @manv;
 
-        INSERT INTO Account(user_name, password, role, id)
-        VALUES (@tk, @mk, @role, @manv);
-    END
+            -- Xóa tài khoản cũ nếu có
+            DELETE FROM Account WHERE id = @manv;
+
+            -- Kiểm tra trùng user_name
+            IF EXISTS (SELECT 1 FROM Account WHERE user_name = @tk)
+            BEGIN
+                THROW 50001, N'Tên tài khoản đã tồn tại.', 1;
+            END
+
+            -- Thêm tài khoản mới
+            INSERT INTO Account(user_name, password, role, id)
+            VALUES (@tk, @mk, @role, @manv);
+        END
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT N'Lỗi: ' + ERROR_MESSAGE();
+    END CATCH
 END;
 
+SET IDENTITY_INSERT Account ON;
 EXEC SUA_NHAN_VIEN
-    @manv = 'NV05',
+    @manv = 3,
     @name = N'Trần Thị C',
     @std = '0987654321',
     @dc = N'Hải Phòng',
@@ -360,6 +461,7 @@ BEGIN
     WHERE book_id IN (SELECT book_id FROM deleted);
 END;
 -------
+select * from Books
 DELETE FROM Books WHERE book_id = 'B001';
 
 -- 2. Xóa độc giả.
@@ -383,35 +485,12 @@ END;
 -------
 DELETE FROM Readers WHERE reader_id = 'R001';
 
--- 3. Xóa tác giả
-CREATE TRIGGER XOA_TACGIA
-ON Author
-INSTEAD OF DELETE
-AS
-BEGIN
-    -- Xóa liên kết trong bảng book_author
-    DELETE FROM book_author
-    WHERE author_id IN (SELECT author_id FROM deleted);
-
-    -- Nếu muốn cho phép xóa tác giả chính trong bảng Books thì:
-    UPDATE Books
-    SET author_id = NULL
-    WHERE author_id IN (SELECT author_id FROM deleted);
-
-    DELETE FROM Author
-    WHERE author_id IN (SELECT author_id FROM deleted);
-END;
----------
-DELETE FROM Author WHERE author_id = 'A002';
-
-
 
 CREATE INDEX IDX_PUBLISHER_NAME ON Publisher(name);
 -- Hỗ trợ tìm kiếm nhà xuất bản theo tên.
 
 CREATE INDEX IDX_AUTHOR_NAME ON Author(name);
 -- Hỗ trợ tìm kiếm tác giả theo tên.
-
 
 CREATE INDEX IDX_STAFF_NAME ON Library_staff(name);
 -- Tăng tốc tìm kiếm nhân viên theo tên.
@@ -477,24 +556,7 @@ CREATE INDEX IDX_BORROW_STAFFID ON Borrow_ticket(id);
 -- Truy vấn phiếu mượn theo nhân viên lập phiếu.
 
 
-
 ------------
---Ví dụ sử dụng  “sp_executesql”  trong SQL Server
---SHA‑256 là thuật toán băm với độ dài 256‑bit trong họ SHA‑2
-DECLARE @username NVARCHAR(255);
-DECLARE @password VARBINARY(64);  -- SHA2_256 trả về 32 bytes = 64 hex chars
-
--- Gán giá trị
-SET @username = 'admin';
-SET @password = HASHBYTES('SHA2_256', 'admin123');
-
--- Dùng sp_executesql để thực hiện câu truy vấn có tham số
-EXEC sp_executesql 
-    N'SELECT * FROM Account WHERE user_name = @username AND password = @password',
-    N'@username NVARCHAR(255), @password VARBINARY(64)',
-    @username, @password;
-
-------
 
 --Ví dụ xử lý lỗi trong SQL Server
 BEGIN TRY
