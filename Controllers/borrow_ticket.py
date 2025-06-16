@@ -6,7 +6,7 @@ from Models.statistics import BorrowsSchema
 from typing import List
 from datetime import date
 from Services import borrow_ticket
-from Models.statistics import BorrowsDetailSchema, Borrows
+from Models.statistics import BorrowsDetailSchema, Borrows, BorrowRequest
 
 router = APIRouter(prefix="/borrows", tags=["borrows"])
 
@@ -27,21 +27,15 @@ def get_borrow_details(ticket_id: str, db: Session = Depends(get_db)):
 
 @router.post("/add")
 def create_borrow(
-    ticket_id: str,
-    reader_id: str,
-    start_date: date,
-    end_date: date,
-    book_id: str,
+    request: BorrowRequest,
     db: Session = Depends(get_db)
 ):
-    borrow, error = ServiceBorrow.create_borrow(
-        db, ticket_id, reader_id, start_date, end_date, book_id
-    )
-    
+    borrow, error = ServiceBorrow.create_borrow(db, request)
+
     if error:
         raise HTTPException(status_code=400, detail=error)
-    
-    return borrow
+
+    return {"message": "Phiếu mượn đã được tạo", "borrow": borrow}
 
 @router.delete("/{ticket_id}")
 def delete_borrow(ticket_id: str, db: Session = Depends(get_db)):

@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 # Thông tin kết nối SQL Server Tùng sửa sửaaa
 SERVER = "DESKTOP-UHPSETD\SQLEXPRESS"
-DATABASE = "qlsach1"
+DATABASE = "qlsach"
 USERNAME = "sa"
 PASSWORD = "Tungthinh2002@"
 DRIVER = "ODBC Driver 17 for SQL Server"

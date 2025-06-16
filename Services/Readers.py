@@ -47,3 +47,13 @@ class ServiceReaders:
     def search_reader(db: Session, name: str):
         return db.query(Readers).filter(Readers.name.ilike(f"%{name}%")).all()
     
+
+    @staticmethod
+    def delete_reader(db: Session, reader_id: str):
+        reader = db.query(Readers).filter(Readers.reader_id == reader_id).first()
+        if reader:
+            db.delete(reader)
+            db.commit()
+            return True  # Xóa thành công
+        return False  # Không tìm thấy reader
+    

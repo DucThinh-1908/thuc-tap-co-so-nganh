@@ -39,3 +39,11 @@ class BorrowsDetailSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class BorrowRequest(BaseModel):
+    ticket_id: str
+    reader_id: str
+    start_date: date
+    end_date: date
+    book_id: str

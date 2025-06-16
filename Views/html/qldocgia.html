@@ -71,6 +71,10 @@
         tr:hover {
             background-color: #f1f1f1;
         }
+        input{
+            width: 250px;
+            height: 25px;
+        }
     </style>
 </head>
 <body>
@@ -79,6 +83,8 @@
         <h2>Quản Lý Độc Giả</h2>
         <input type="text" id="reader_name" placeholder="Nhập tên Độc Giả">
         <button onclick="searchReader()">Tìm Kiếm</button>
+        <input type="text" id="reader_id" placeholder="Nhập id Độc Giả">
+        <button onclick="deleteReader()">Xoá</button>
         <div class="form-group">
             <input type="text" id="madocgia" placeholder="Mã độc giả">
             <input type="text" id="khoa" placeholder="Khoa">
@@ -270,4 +276,35 @@ function updateReader() {
     });
 }
 </script>
+
+<script>
+    function deleteReader() {
+        const id = $("#reader_id").val().trim();
+        console.log("Đang gửi yêu cầu xoá reader với ID:", id);
+
+        if (!id) {
+            alert("Reader ID không được để trống!");
+            return;
+        }
+
+        $.ajax({
+            url: `http://127.0.0.1:8000/readers/readers/${id}`, // Đường dẫn API xoá reader
+            type: "DELETE",
+            contentType: "application/json",
+            success: function () {
+                alert("Xoá reader thành công!");
+                location.reload();
+            },
+            error: function (xhr) {
+                console.error("Lỗi khi xoá reader:", xhr);
+                if (xhr.status === 404) {
+                    alert("Reader không tồn tại!");
+                } else {
+                    alert("Đã xảy ra lỗi khi xoá reader.");
+                }
+            }
+        });
+    }
+</script>
+
 </html>

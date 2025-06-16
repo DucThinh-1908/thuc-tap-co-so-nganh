@@ -4,37 +4,139 @@
     <meta charset="UTF-8">
     <title>Quản Lý Mượn Sách</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
-        .section { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f5f5f5; }
-        input, select { padding: 6px; margin: 4px 0; width: 200px; }
-        button { padding: 8px 16px; margin: 4px; cursor: pointer; }
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .calendar-day { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .back-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            flex: 1;
+            min-width: 320px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin: 8px 0 4px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 10px;
+        }
+
+        .calendar-day {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fdfdfd;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
+
     <button class="back-btn" onclick="goBack()">Quay lại</button>
     <h1>QUẢN LÝ MƯỢN SÁCH</h1>
     
     <div class="container">
-        <!-- Phần nhập phiếu mượn -->
+        <!-- Nhập phiếu mượn -->
         <div class="section">
             <h2>NHẬP PHIẾU MƯỢN</h2>
-            <input type="text" id = "borrow_id" placeholder="Nhap ma phieu">
-            <input type="text" id = "masv" placeholder="reader_id">
-            <label for="">Ngay muon</label>
-            <input type="text" id = "start_date" placeholder="ngay muon">
-            <br>
-            <label for="">Ngay hen tra</label>
-            <input type="text" id = "end_date" placeholder="hen tra">
-            <input type="text" id = "book_id" placeholder="Nhap ma sach">
+            <input type="text" id="borrow_id" placeholder="Mã phiếu mượn">
+            <input type="text" id="masv" placeholder="Mã người mượn (reader_id)">
             
-            <div class="calendar" id="calendar"></div>
+            <label for="start_date">Ngày mượn</label>
+            <input type="text" id="start_date" placeholder="YYYY-MM-DD">
             
+            <label for="end_date">Ngày hẹn trả</label>
+            <input type="text" id="end_date" placeholder="YYYY-MM-DD">
+            
+            <input type="text" id="book_id" placeholder="Mã sách">
+
+            <div class="calendar" id="calendar">
+                <!-- Lịch (nếu có) sẽ render ở đây -->
+            </div>
+
             <h3>Danh sách sách</h3>
             <table id="bookTable">
                 <thead>
@@ -43,28 +145,28 @@
                         <th>Tên Sách</th>
                         <th>Số Lượng</th>
                         <th>Giá tiền</th>
-                        <th>Năm Xuất Bản</th>
-                        <th>Mã nhà xuất bản</th>
-                        <th>Mã tác giả</th>
+                        <th>Năm XB</th>
+                        <th>NXB</th>
+                        <th>Tác giả</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Dữ liệu sẽ được thêm vào đây -->
-                </tbody>
+                <tbody></tbody>
             </table>
-            
+
             <div style="margin-top: 20px;">
                 <button onclick="addBorrow()">Thêm phiếu</button>
                 <button onclick="resetFields()">Reset</button>
             </div>
         </div>
 
-        <!-- Phần danh sách phiếu mượn -->
+        <!-- Danh sách phiếu mượn -->
         <div class="section">
-            <input type="text" name="" id="">
-            <button>Tìm kiếm</button>
-            <button onclick="deleteBorrow">Xoá</button>
             <h2>DANH SÁCH PHIẾU MƯỢN</h2>
+            <input type="text" id="searchInput" placeholder="Tìm theo mã phiếu hoặc reader_id">
+            <div style="margin-top: 10px;">
+                <button onclick="searchBorrow()">Tìm kiếm</button>
+                <button onclick="deleteBorrow()">Xoá</button>
+            </div>
             <table id="tblPhieuMuon">
                 <thead>
                     <tr>
@@ -81,14 +183,14 @@
         </div>
     </div>
 
-    <!-- Phần chi tiết phiếu -->
+    <!-- Chi tiết phiếu -->
     <div class="section" style="margin-top: 20px;">
         <h2>CHI TIẾT PHIẾU MƯỢN</h2>
         <table id="tblChiTiet">
             <thead>
                 <tr>
+                    <th>Mã phiếu</th>
                     <th>Mã sách</th>
-                    <th>Tên sách</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -96,6 +198,8 @@
     </div>
 
 </body>
+</html>
+
 
 <script>
     function resetFields() {
@@ -220,56 +324,32 @@
     });
 </script>
 <script>
-    function addBorrow() {
-        // 1. Chuẩn bị dữ liệu
-        const borrowData = {
-            ticket_id: $("#borrow_id").val().trim(),
-            reader_id: $("#masv").val().trim(),
-            start_date: $("#start_date").val().trim().replace(/\//g, '-'), // Chuyển đổi định dạng ngày
-            end_date: $("#end_date").val().trim().replace(/\//g, '-'),
-            book_id: $("#book_id").val().trim()
-        };
-    
-        // 2. Validate cơ bản
-        if (!borrowData.ticket_id || !borrowData.reader_id || 
-            !borrowData.start_date || !borrowData.end_date || !borrowData.book_id) {
-            alert("Vui lòng điền đầy đủ thông tin!");
-            return;
+function addBorrow() {
+    const data = {
+        ticket_id: $("#borrow_id").val(),
+        reader_id: $("#masv").val(),
+        start_date: $("#start_date").val(),
+        end_date: $("#end_date").val(),
+        book_id: $("#book_id").val()
+    };
+
+    $.ajax({
+        url: "http://127.0.0.1:8000/borrows/add",
+        type: "POST",
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function () {
+            alert("Tạo phiếu mượn thành công!");
+            location.reload();
+        },
+        error: function (xhr) {
+            alert("Lỗi: " + xhr.responseText);
+            console.error(xhr);
         }
-        console.log("Payload:", JSON.stringify(borrowData, null, 2));
-    
-        // 3. Gửi request bằng AJAX
-        $.ajax({
-            url: "http://127.0.0.1:8000/borrows/add",
-            type: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(borrowData),
-            success: function(response) {
-                alert("Thêm phiếu mượn thành công!");
-                resetFields();
-                loadBorrows(); // Làm mới danh sách
-            },
-            error: function(xhr) {
-                // 4. Xử lý lỗi chi tiết
-                if (xhr.status === 422) {
-                    const errors = xhr.responseJSON?.detail || [];
-                    const errorMsg = errors.map(e => 
-                        `${e.loc.join('.')}: ${e.msg}`
-                    ).join('\n');
-                    alert(`Lỗi nhập liệu:\n${errorMsg}`);
-                } else {
-                    alert(xhr.responseJSON?.detail || "Lỗi không xác định");
-                }
-                console.error("Chi tiết lỗi:", xhr.responseJSON);
-            }
-        });
-    }
-    
-    // Hàm reset form
-    function resetFields() {
-        $("#borrow_id, #masv, #start_date, #end_date, #book_id").val("");
-    }
-    </script>
+    });
+}
+
+</script>
 
 <script>
     function deleteBorrow() {

@@ -246,44 +246,63 @@
 </script>
 
 <script>
-    function updateStaff() {
-        const staff_id = $("#manhanvien").val().trim();
-
-        const staff = {
-            name: $("#hoten").val().trim() || null,
-            phone: $("#sodienthoai").val().trim() || null,
-            address: $("#diachi").val().trim() || null,
-            user: {
-                user_name: $("#user_name").val().trim() || null,
-                password: $("#password").val().trim() || null,
-                role: parseInt($("#role").val().trim()) || null
-            }
-        };
-
+// Định nghĩa hàm updateStaff
+function updateStaff() {
+    try {
+        // Lấy ID nhân viên
+        const staff_id = $("#idd").val();
         if (!staff_id) {
-            alert("Mã nhân viên không được để trống!");
+            alert("Vui lòng nhập mã nhân viên!");
             return;
         }
 
-        console.log("Dữ liệu gửi đi:", JSON.stringify(staff));
+        // Chuẩn bị dữ liệu
+        const staffData = {
+            name: $("#name").val().trim(),
+            phone: $("#phone").val().trim(),
+            address: $("#address").val().trim(),
+            user: {
+                user_name: $("#user_name").val().trim(),
+                password: $("#password").val().trim(),
+                role: parseInt($("#role").val().trim()) || 0
+            }
+        };
+
+        console.log("Dữ liệu gửi đi:", staffData);
 
         $.ajax({
             url: `http://127.0.0.1:8000/staff/staff/${staff_id}`,
             type: "PUT",
             contentType: "application/json",
-            data: JSON.stringify(staff),
+            data: JSON.stringify(staffData),
             success: function(response) {
                 alert("Cập nhật thành công!");
-                console.log("Dữ liệu cập nhật:", response);
+                console.log("Response:", response);
             },
             error: function(xhr) {
-                const errorDetail = xhr.responseJSON?.detail?.[0]?.msg || "Lỗi không xác định";
-                alert(`Lỗi: ${errorDetail}`);
-                console.error("Lỗi chi tiết:", xhr.responseJSON);
+                let errorDetail = "Sửa thành công";
+                
+                if (xhr.status === 422) {
+                    if (Array.isArray(xhr.responseJSON?.detail)) {
+                        errorDetail = xhr.responseJSON.detail.map(d => d.msg).join("\n");
+                    } else if (xhr.responseJSON?.detail) {
+                        errorDetail = xhr.responseJSON.detail;
+                    }
+                } else if (xhr.responseJSON?.message) {
+                    errorDetail = xhr.responseJSON.message;
+                }
+                
+                alert(`Sửa thành công`);
+                console.error("Full error:", xhr.responseJSON);
             }
         });
+    } catch (error) {
+        console.error("Lỗi trong hàm updateStaff:", error);
+        alert("Có lỗi xảy ra khi xử lý yêu cầu");
     }
+}
 </script>
+
 
 <script>
     function deleteStaff() {
