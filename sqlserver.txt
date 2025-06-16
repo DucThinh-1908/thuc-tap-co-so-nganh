@@ -28,7 +28,7 @@ CREATE TABLE Library_staff (
 GO
 
 -- Table: Users (Tài khoản người dùng, liên kết với Library_staff)
-CREATE TABLE Users (
+CREATE TABLE Account (
     id INT IDENTITY(1,1) NOT NULL,
     user_name VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255) NOT NULL,
@@ -99,8 +99,8 @@ VALUES
     ('Nguyen Van A', '0123456789', '123 ABC Street'),
     ('Tran Thi B', '0987654321', '456 XYZ Street');
 select * From library_staff
--- Thêm dữ liệu vào bảng Users
-INSERT INTO Users (user_name, password, role)
+-- Thêm dữ liệu vào bảng Account
+INSERT INTO Account (user_name, password, role)
 VALUES 
     ('admin', 'admin123','1'),
     ('staff1', 'staff123','0');
@@ -158,7 +158,7 @@ BEGIN
     INSERT INTO library_staff (id, name, phone, address)
     VALUES (@ma_nv, @name, @std, @dc);
     
-    INSERT INTO Users (id, user_name, password, role)
+    INSERT INTO Account(id, user_name, password, role)
     VALUES (@ma_nv, @tk, @mk, @role);
 END;
 
@@ -234,7 +234,7 @@ BEGIN
     SET quantity = quantity + 1
     WHERE book_id = @p_book_id;
 END;
-exec XOA_SACH @p_ticket_id = 'T001', @p_book_id = 'B001'
+EXEC XOA_PHIEU @p_ticket_id = 'T001', @p_book_id = 'B001'
 ------------------------
 CREATE FUNCTION TONG_TIEN (@ticket_id VARCHAR(255))
 RETURNS INT
@@ -249,7 +249,7 @@ BEGIN
 
     RETURN @total;
 END;
-SELECT dbo.TONG_TIEN('T002');
+SELECT dbo.TONG_TIEN('T002') AS TONGTIEN;
 -------------
 CREATE PROCEDURE XOA_NV
     @p_manv INT
@@ -266,7 +266,7 @@ BEGIN
         END
 
         -- Xóa tài khoản trong bảng Account trước
-        DELETE FROM Users WHERE id = @p_manv;
+        DELETE FROM Account WHERE id = @p_manv;
 
         -- Xóa nhân viên trong bảng library_staff
         DELETE FROM library_staff WHERE id = @p_manv;
@@ -298,9 +298,9 @@ BEGIN
         SET name = @name, phone = @std, address = @dc
         WHERE id = @manv;
 
-        DELETE FROM Users WHERE id = @manv;
+        DELETE FROM Account WHERE id = @manv;
 
-        INSERT INTO Users (user_name, password, role, id)
+        INSERT INTO Account(user_name, password, role, id)
         VALUES (@tk, @mk, @role, @manv);
     END
 END;
@@ -315,7 +315,7 @@ EXEC SUA_NHAN_VIEN
     @role = 1;
 -----------------
 
-SELECT * FROM Users;
+SELECT * FROM Account;
 SELECT * FROM library_staff;
 SELECT * FROM readers;
 SELECT * FROM borrow_ticket;
@@ -324,3 +324,237 @@ SELECT * FROM books;
 SELECT * FROM publisher;
 select * from book_author
 SELECT * FROM author;
+-- 1. Cập nhật giá sach
+update books
+set price = 85000
+where book_id = 'B001';
+
+-- 2. Cập nhật số điện thoại đọc giả
+update Readers
+set phone = 0354669208
+where reader_id = 'R001';
+
+-- 3. Cập nhật địa chỉ bạn đọc
+update Readers
+set address = '124 DFK Street'
+where reader_id = 'R002';
+
+-- 4. Cập nhật tên sách
+update books
+set name = N' toán'
+where book_id = 'B001';
+
+-- 1. Xóa sách theo mã
+CREATE TRIGGER XOA_SACH
+ON Books
+INSTEAD OF DELETE
+AS
+BEGIN
+    DELETE FROM Borrow_ticket_detail
+    WHERE book_id IN (SELECT book_id FROM deleted);
+
+    DELETE FROM book_author
+    WHERE book_id IN (SELECT book_id FROM deleted);
+
+    DELETE FROM Books
+    WHERE book_id IN (SELECT book_id FROM deleted);
+END;
+-------
+DELETE FROM Books WHERE book_id = 'B001';
+
+-- 2. Xóa độc giả.
+CREATE TRIGGER XOA_DOCGIA
+ON Readers
+INSTEAD OF DELETE
+AS
+BEGIN
+    DELETE FROM Borrow_ticket_detail
+    WHERE ticket_id IN (
+        SELECT ticket_id FROM Borrow_ticket
+        WHERE reader_id IN (SELECT reader_id FROM deleted)
+    );
+
+    DELETE FROM Borrow_ticket
+    WHERE reader_id IN (SELECT reader_id FROM deleted);
+
+    DELETE FROM Readers
+    WHERE reader_id IN (SELECT reader_id FROM deleted);
+END;
+-------
+DELETE FROM Readers WHERE reader_id = 'R001';
+
+-- 3. Xóa tác giả
+CREATE TRIGGER XOA_TACGIA
+ON Author
+INSTEAD OF DELETE
+AS
+BEGIN
+    -- Xóa liên kết trong bảng book_author
+    DELETE FROM book_author
+    WHERE author_id IN (SELECT author_id FROM deleted);
+
+    -- Nếu muốn cho phép xóa tác giả chính trong bảng Books thì:
+    UPDATE Books
+    SET author_id = NULL
+    WHERE author_id IN (SELECT author_id FROM deleted);
+
+    DELETE FROM Author
+    WHERE author_id IN (SELECT author_id FROM deleted);
+END;
+---------
+DELETE FROM Author WHERE author_id = 'A002';
+
+
+
+CREATE INDEX IDX_PUBLISHER_NAME ON Publisher(name);
+-- Hỗ trợ tìm kiếm nhà xuất bản theo tên.
+
+CREATE INDEX IDX_AUTHOR_NAME ON Author(name);
+-- Hỗ trợ tìm kiếm tác giả theo tên.
+
+
+CREATE INDEX IDX_STAFF_NAME ON Library_staff(name);
+-- Tăng tốc tìm kiếm nhân viên theo tên.
+
+CREATE INDEX IDX_STAFF_PHONE ON Library_staff(phone);
+-- Hỗ trợ truy vấn theo số điện thoại.
+
+CREATE INDEX IDX_STAFF_ADDRESS ON Library_staff(address);
+-- Lọc nhân viên theo khu vực địa chỉ.
+
+-- user_name đã là PRIMARY KEY nên đã có chỉ mục tự động.
+
+CREATE INDEX IDX_USERS_ROLE ON Account(role);
+-- Hỗ trợ truy vấn tài khoản theo vai trò (admin, thủ thư…).
+
+CREATE INDEX IDX_USERS_STAFFID ON Account(id);
+-- Tăng tốc truy vấn liên kết giữa Users và Library_staff.
+
+
+
+
+CREATE INDEX IDX_READERS_NAME ON Readers(name);
+-- Hỗ trợ tìm kiếm độc giả theo tên.
+
+CREATE INDEX IDX_READERS_PHONE ON Readers(phone);
+-- Hỗ trợ truy vấn theo số điện thoại.
+
+CREATE INDEX IDX_READERS_FACULTY ON Readers(faculty);
+-- Lọc độc giả theo khoa.
+
+CREATE INDEX IDX_READERS_CLASS ON Readers(Class);
+-- Lọc độc giả theo lớp.
+
+CREATE INDEX IDX_BOOKS_NAME ON Books(name);
+-- Tìm kiếm sách theo tên.
+
+CREATE INDEX IDX_BOOKS_QUANTITY ON Books(quantity);
+-- Hỗ trợ kiểm tra tồn kho sách.
+
+CREATE INDEX IDX_BOOKS_PRICE ON Books(price);
+-- Lọc hoặc sắp xếp sách theo giá.
+
+CREATE INDEX IDX_BOOKS_YEAR ON Books(published_year);
+-- Truy vấn sách theo năm xuất bản.
+
+CREATE INDEX IDX_BOOKS_PUBLISHER ON Books(publisher_id);
+-- Tăng tốc truy vấn sách theo nhà xuất bản.
+
+CREATE INDEX IDX_BOOKS_AUTHOR ON Books(author_id);
+-- Tăng tốc truy vấn sách theo tác giả.
+
+
+CREATE INDEX IDX_BORROW_READER ON Borrow_ticket(reader_id);
+-- Truy vấn các phiếu mượn theo độc giả.
+
+CREATE INDEX IDX_BORROW_DATES ON Borrow_ticket(start_date, end_date);
+-- Truy vấn phiếu mượn trong khoảng thời gian.
+
+CREATE INDEX IDX_BORROW_STATUS ON Borrow_ticket(status);
+-- Lọc phiếu mượn theo trạng thái (đang mượn, đã trả...).
+
+CREATE INDEX IDX_BORROW_STAFFID ON Borrow_ticket(id);
+-- Truy vấn phiếu mượn theo nhân viên lập phiếu.
+
+
+
+------------
+--Ví dụ sử dụng  “sp_executesql”  trong SQL Server
+--SHA‑256 là thuật toán băm với độ dài 256‑bit trong họ SHA‑2
+DECLARE @username NVARCHAR(255);
+DECLARE @password VARBINARY(64);  -- SHA2_256 trả về 32 bytes = 64 hex chars
+
+-- Gán giá trị
+SET @username = 'admin';
+SET @password = HASHBYTES('SHA2_256', 'admin123');
+
+-- Dùng sp_executesql để thực hiện câu truy vấn có tham số
+EXEC sp_executesql 
+    N'SELECT * FROM Account WHERE user_name = @username AND password = @password',
+    N'@username NVARCHAR(255), @password VARBINARY(64)',
+    @username, @password;
+
+------
+
+--Ví dụ xử lý lỗi trong SQL Server
+BEGIN TRY
+    SELECT * FROM Account WHERE user_name = 'admin';
+END TRY
+BEGIN CATCH
+    PRINT N'Có lỗi xảy ra, vui lòng thử lại sau.';
+END CATCH;
+-------
+
+--Backup cơ sở dữ liệu định kỳ, 
+--ví dụ:
+BACKUP DATABASE qlsach5
+TO DISK = 'D:\Backup\qlsach5.bak'
+WITH FORMAT, INIT, NAME = 'Full Backup';
+
+--Restore
+--Sau khi restore xong có thể vào SQL Server Management Studio (SSMS) → mở database qlsach5_restore → xem bảng, dữ liệu, v.v.
+RESTORE DATABASE qlsach5_restore
+FROM DISK = 'D:\Backup\qlsach5.bak'
+WITH MOVE 'qlsach5' TO 'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\qlsach5_restore.mdf',
+     MOVE 'qlsach5_log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\qlsach5_restore_log.ldf',
+     REPLACE;
+-------
+--Phân quyền
+
+CREATE LOGIN user_staff WITH PASSWORD = 'staff123@';
+CREATE USER user_staff FOR LOGIN user_staff;
+
+CREATE LOGIN user_admin WITH PASSWORD = 'admin123@';
+CREATE USER user_admin FOR LOGIN user_admin;
+
+-- Cho phép xem các bảng:
+GRANT SELECT ON Borrow_ticket TO user_staff;
+GRANT SELECT ON Readers TO user_staff;
+GRANT SELECT ON Books TO user_staff;
+GRANT SELECT ON Author TO user_staff;
+GRANT SELECT ON Publisher TO user_staff;
+
+-- Cho phép xem và thêm chi tiết phiếu mượn:
+GRANT SELECT, INSERT ON Borrow_ticket_detail TO user_staff;
+
+-- Cho phép cập nhật trạng thái phiếu mượn:
+GRANT UPDATE ON Borrow_ticket TO user_staff;
+
+-- Quản lý toàn quyền đọc/ghi/cập nhật
+GRANT SELECT, INSERT, UPDATE ON Library_staff TO user_admin;
+GRANT SELECT, INSERT, UPDATE ON Account TO user_admin;
+GRANT SELECT, INSERT, UPDATE ON Readers TO user_admin;
+GRANT SELECT, INSERT, UPDATE ON Books TO user_admin;
+GRANT SELECT, INSERT, UPDATE ON Author TO user_admin;
+GRANT SELECT, INSERT, UPDATE ON Publisher TO user_admin;
+GRANT SELECT, INSERT, UPDATE ON Borrow_ticket TO user_admin;
+GRANT SELECT, INSERT, UPDATE ON Borrow_ticket_detail TO user_admin;
+GRANT SELECT, INSERT, UPDATE ON Book_Author TO user_admin;
+
+-- Thu hồi toàn bộ quyền của user_staff với các bảng
+REVOKE SELECT, INSERT, UPDATE ON Books FROM user_staff;
+REVOKE SELECT ON Readers FROM user_staff;
+REVOKE SELECT, UPDATE ON Borrow_ticket FROM user_staff;
+REVOKE SELECT, INSERT ON Borrow_ticket_detail FROM user_staff;
+REVOKE SELECT ON Author FROM user_staff;
+REVOKE SELECT ON Publisher FROM user_staff;
